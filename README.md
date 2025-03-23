@@ -65,7 +65,7 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 5. Ahora le das a Maven
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/69ba07a8-62e4-4e8a-938b-d3b013de559a" />
 
-6. version 3.3.4 (la primera que te sale)
+6. version 3.4.4 (la primera que te sale)
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/26ef620b-86f6-42d6-b53d-b2745c4f551e" />
 
 7. Java
