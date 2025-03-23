@@ -53,22 +53,19 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
    ```bash
    git clone https://github.com/tuusuario/libroredsocial.git
    cd libroredsocial/backend
-  ```
+  
 2. Tener instalado el Maven
-```
-```
+
 3. Crear Proyecto java
-```
+
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/c201de0c-6967-469b-999f-944389e15555" />
-```
+
 4. Le das a Spring Boot
-```
+
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/c66eb608-8580-4a98-b44a-58b5be8bddaa" />
-```
-5. Ahora le das a Maven
-```
+
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/69ba07a8-62e4-4e8a-938b-d3b013de559a" />
-```
+
 6. version 3.3.4 (la primera que te sale)
 ```
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/26ef620b-86f6-42d6-b53d-b2745c4f551e" />
