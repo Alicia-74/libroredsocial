@@ -188,7 +188,7 @@ La documentación completa del proyecto está disponible en el siguiente enlace:
 
 La interfaz de usuario ha sido diseñada en Figma y puedes ver el diseño completo a través del siguiente enlace:
 
-[Ver interfaz en Figma](https://www.figma.com/...)
+[Ver interfaz en Figma](https://www.figma.com/design/9IIWtfJYqsK9JhYAPIdWq9/Dise%C3%B1o-de-mi-TFG?t=piloSoK4KWTeQctb-0)
 
 ## Conclusión
 
@@ -209,4 +209,18 @@ Este proyecto ha sido una gran oportunidad para poner en práctica los conocimie
   - [React Documentation](https://reactjs.org/docs/getting-started.html) - Documentación oficial de React para el desarrollo del frontend.
   - [Tailwind CSS](https://tailwindcss.com/docs) - Documentación oficial de Tailwind CSS para el diseño de la interfaz.
 
+
+## Licencias
+
+Este proyecto está licenciado bajo la **MIT License**. Puedes obtener una copia de la licencia en el siguiente enlace: [Licencia MIT](https://github.com/Alicia-74/libroredsocial/blob/main/LICENSE).
+
+---
+
+## Contacto
+
+Si tienes alguna pregunta o deseas más información sobre este proyecto, no dudes en contactarme:
+
+- **Correo Electrónico:** aliciahernandezcontreras7@gmail.com
+- **GitHub:** [https://github.com/tuusuario](https://github.com/Alicia-74)
+- **LinkedIn:** [https://www.linkedin.com/in/alicia-hernandez](https://www.linkedin.com/in/alicia-hernandez)
 
