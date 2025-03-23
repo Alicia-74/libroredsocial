@@ -57,39 +57,32 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 2. Tener instalado el Maven
 
 3. Crear Proyecto java
-
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/c201de0c-6967-469b-999f-944389e15555" />
 
 4. Le das a Spring Boot
-
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/c66eb608-8580-4a98-b44a-58b5be8bddaa" />
 
+5. Ahora le das a Maven
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/69ba07a8-62e4-4e8a-938b-d3b013de559a" />
 
 6. version 3.3.4 (la primera que te sale)
-```
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/26ef620b-86f6-42d6-b53d-b2745c4f551e" />
-```
+
 7. Java
-```
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/55179bf8-c07a-4ad9-8516-16a96a71f30f" />
-```
+
 8. Le pones un nombre
-```
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/bd741b2a-3e22-4e20-8618-ad5003d3d294" />
-```
+
 9. Yo le he vuelto a poner el mismo nombre que el paso anterior pero le puedes poner el titulo de tu app
-```
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/e72a5374-6cf1-4118-b601-85a1c27b7e12" />
-```
+
 10. Jar 17
-```
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/9f33876f-fb30-4b0e-a066-ce64f666c5ae" />
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/a69b9105-4c3e-47fc-b2d1-be2efd895a8e" />
-```
+
 11. Elegir las dependencias, en mi caso he elegido estas 5:
-```
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/5201415a-e224-4185-b0dd-6cdf96a54f52" />
-```
+
 
 
