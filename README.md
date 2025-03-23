@@ -145,12 +145,12 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  
+  ```
 
 ### Comando para inicializar el proyecto
    ```
    npm start
-
+   ```
 
 ## Guía de Uso
 
