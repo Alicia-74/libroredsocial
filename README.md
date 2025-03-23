@@ -73,7 +73,7 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 ![image](https://github.com/user-attachments/assets/9f33876f-fb30-4b0e-a066-ce64f666c5ae)
 ![image](https://github.com/user-attachments/assets/a69b9105-4c3e-47fc-b2d1-be2efd895a8e)
 11. Elegir las dependencias, en mi caso he elegido estas 5:
-![image](https://github.com/user-attachments/assets/5201415a-e224-4185-b0dd-6cdf96a54f52)
+![dependencies](https://github.com/user-attachments/assets/5201415a-e224-4185-b0dd-6cdf96a54f52)
 
 
 
