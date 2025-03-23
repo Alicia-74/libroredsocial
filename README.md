@@ -113,30 +113,30 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
    npm install
    ```
    - Crear proyecto React y acceder al proyecto:
-   ```bash
+   ```
    npx create-react-app nombre-del-proyecto
    cd nombre-del-proyecto
-
+   ```
    - Instalar Tailwind CSS:
-   ```bash
+   ```
    npm install tailwindcss @tailwindcss/cli
    npx tailwindcss init
-
+   ```
 3. Configurar Tailwind en tu proyecto:
    - Ahora, abre el archivo src/index.css y agrega lo siguiente al inicio del archivo:
-   ```bash
+   ```
    /* src/index.css */
    @tailwind base;
    @tailwind components;
    @tailwind utilities;
-   
+   ```
 4. Configurar package.json el "scripts" para ejecutar el servidor back y front a la vez (concurrently):
    - Instalar concurrently:
-   ```bash
+   ```
    npm install concurrently --save-dev
-   
+   ```
    - Configurar los scripts en package.json:
-   ```bash
+   ```
    "scripts": {
     "start": "concurrently \"npm run start-react\" \"npm run start-spring\"",
     "start-react": "react-scripts start",
@@ -145,9 +145,10 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  
 
 ### Comando para inicializar el proyecto
-   ```bash
+   ```
    npm start
 
 
