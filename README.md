@@ -97,7 +97,7 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
    - Los usuarios pueden registrarse con un nombre de usuario, correo electrónico y contraseña. Si ya tienes una cuenta, solo tienes que iniciar sesión con tus credenciales.
 
 2. **Exploración de Libros:**
-   - Una vez dentro, podrás buscar libros por título, autor o categoría usando la barra de búsqueda o los botones (en caso de estar en el pc)/selección categorías (en caso de estar en el móvil).
+   - Una vez dentro, podrás buscar libros por título, autor o categoría usando la barra de búsqueda y/o los botones (en caso de estar en el pc)/selección categorías (en caso de estar en el móvil).
    - Los resultados se mostrarán con la portada del libro, título y autor. Al hacer clic en un libro, se mostrará su descripción, así como la opción para puntuar y comentar sobre el libro.
 
 3. **Puntuar y Comentar Libros:**
