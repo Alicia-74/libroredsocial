@@ -84,12 +84,72 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 11. Elegir las dependencias, en mi caso he elegido estas 5:
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/5201415a-e224-4185-b0dd-6cdf96a54f52" />
 
+12. Configura la base de datos:
+    - Asegúrate de tener MySQL instalado y en ejecución.
+      ```bash
+      -- Crear la base de datos
+      CREATE DATABASE libroredsocial;
+      
+13. Configura el archivo de propiedades de la base de datos:
+    - En el archivo application.properties (o application.yml), configura la conexión a la base de datos
+    ```bash
+    spring.datasource.url=jdbc:mysql://localhost:3306/libroredsocial
+    spring.datasource.username=tu_usuario
+    spring.datasource.password=tu_contraseña
+    spring.jpa.hibernate.ddl-auto=update
+    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    spring.datasource.platform=mysql
+
+
 ### Frontend
 1. Clona el repositorio:
    ```bash
    git clone https://github.com/tuusuario/libroredsocial.git
    cd libroredsocial/frontend
+
+2. Instala las dependencias del frontend:
+   - Asegúrate de tener Node.js y npm instalados.
+   ```bash
+   npm install
    
+   - Crear proyecto React y acceder al proyecto:
+   ```bash
+   npx create-react-app nombre-del-proyecto
+   cd nombre-del-proyecto
+
+   - Instalar Tailwind CSS:
+   ```bash
+   npm install tailwindcss @tailwindcss/cli
+   npx tailwindcss init
+
+3. Configurar Tailwind en tu proyecto:
+   - Ahora, abre el archivo src/index.css y agrega lo siguiente al inicio del archivo:
+   ```bash
+   /* src/index.css */
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   
+4. Configurar package.json el "scripts" para ejecutar el servidor back y front a la vez (concurrently):
+   - Instalar concurrently:
+   ```bash
+   npm install concurrently --save-dev
+   
+   - Configurar los scripts en package.json:
+   ```bash
+   "scripts": {
+    "start": "concurrently \"npm run start-react\" \"npm run start-spring\"",
+    "start-react": "react-scripts start",
+    "start-spring": "cd .. && mvnw.cmd spring-boot:run",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+
+### Comando para inicializar el proyecto
+   ```bash
+   npm start
+
 
 ## Guía de Uso
 
