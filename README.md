@@ -109,9 +109,9 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 
 2. Instala las dependencias del frontend:
    - Asegúrate de tener Node.js y npm instalados.
-   ```bash
+   ```
    npm install
-   
+   ```
    - Crear proyecto React y acceder al proyecto:
    ```bash
    npx create-react-app nombre-del-proyecto
