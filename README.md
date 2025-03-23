@@ -144,8 +144,8 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
-  ```
+     },
+     ```
 
 ### Comando para inicializar el proyecto
    ```
