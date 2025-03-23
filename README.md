@@ -84,5 +84,68 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 11. Elegir las dependencias, en mi caso he elegido estas 5:
 <img width="391" alt="java-info" src="https://github.com/user-attachments/assets/5201415a-e224-4185-b0dd-6cdf96a54f52" />
 
+### Frontend
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/tuusuario/libroredsocial.git
+   cd libroredsocial/frontend
+   
+
+## Guía de Uso
+
+1. **Registro e Inicio de Sesión:**
+   - Los usuarios pueden registrarse con un nombre de usuario, correo electrónico y contraseña. Si ya tienes una cuenta, solo tienes que iniciar sesión con tus credenciales.
+
+2. **Exploración de Libros:**
+   - Una vez dentro, podrás buscar libros por título, autor o categoría usando la barra de búsqueda.
+   - Los resultados se mostrarán con la portada del libro, título y autor. Al hacer clic en un libro, se mostrará su descripción, así como la opción para puntuar y comentar sobre el libro.
+
+3. **Puntuar y Comentar Libros:**
+   - Puedes darle una calificación de 1 a 5 estrellas y dejar un comentario en cada libro.
+   - Los comentarios de otros usuarios también serán visibles, y podrás seguirlos o enviarles mensajes privados si lo deseas.
+
+4. **Agregar a Mi Lista:**
+   - Al ver un libro, tendrás la opción de agregarlo a tu lista de libros que deseas leer, para que puedas llevar un registro de los libros que te interesan.
+
+5. **Interacción con Otros Usuarios:**
+   - Puedes seguir a otros usuarios y ver sus recomendaciones de libros.
+   - Si quieres interactuar más, puedes enviarles mensajes privados.
+
+6. **Modo Oscuro/Claro:**
+   - Puedes cambiar el tema de la interfaz entre claro y oscuro para adaptarlo a tus preferencias personales.
+
+7. **Cerrar Sesión:**
+   - Cuando termines de usar la plataforma, puedes cerrar sesión desde tu perfil de usuario.
+
+## Enlace a la Documentación
+
+La documentación completa del proyecto está disponible en el siguiente enlace:
+
+[Documentación del Proyecto](https://enlace-a-tu-documentacion)
+
+## Enlace a Figma
+
+La interfaz de usuario ha sido diseñada en Figma y puedes ver el diseño completo a través del siguiente enlace:
+
+[Ver interfaz en Figma](https://www.figma.com/...)
+
+## Conclusión
+
+Este proyecto ha sido una gran oportunidad para poner en práctica los conocimientos adquiridos durante el ciclo formativo. Me ha permitido combinar mis intereses en la tecnología con mi pasión por la lectura, creando una plataforma donde los usuarios pueden interactuar y compartir sus recomendaciones literarias. Además, he aprendido mucho sobre el desarrollo de aplicaciones web, la integración de APIs externas, y la gestión de bases de datos. A lo largo del proceso, he mejorado mis habilidades tanto en el backend como en el frontend, y estoy satisfecha con los resultados obtenidos.
+
+## Contribuciones, Agradecimientos y Referencias
+
+- **Contribuciones:**  
+  Agradezco a todos aquellos que han aportado ideas y sugerencias para mejorar la aplicación. También valoro el trabajo colaborativo que me ha permitido llevar a cabo este proyecto.
+
+- **Agradecimientos:**  
+  Quiero agradecer a mi tutor Joaquín por su apoyo y orientación durante el desarrollo del proyecto. Sus recomendaciones fueron clave para mejorar tanto la arquitectura como las funcionalidades del sistema.
+
+- **Referencias:**  
+  - [OpenLibrary API](https://openlibrary.org/developers/api) - API utilizada para obtener información sobre los libros.
+  - [Figma](https://www.figma.com/) - Herramienta utilizada para diseñar la interfaz de usuario.
+  - [Spring Boot Documentation](https://spring.io/projects/spring-boot) - Documentación oficial de Spring Boot para el desarrollo del backend.
+  - [React Documentation](https://reactjs.org/docs/getting-started.html) - Documentación oficial de React para el desarrollo del frontend.
+  - [Tailwind CSS](https://tailwindcss.com/docs) - Documentación oficial de Tailwind CSS para el diseño de la interfaz.
 
 
