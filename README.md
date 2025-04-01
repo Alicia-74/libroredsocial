@@ -122,6 +122,11 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
    npm install tailwindcss @tailwindcss/cli
    npx tailwindcss init
    ```
+   - Instalar JWT-decode:
+   ```
+   npm install jwt-decode
+   ```
+
 3. Configurar Tailwind en tu proyecto:
    - Ahora, abre el archivo src/index.css y agrega lo siguiente al inicio del archivo:
    ```
