@@ -147,9 +147,9 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
     "eject": "react-scripts eject"
      },
      ```
-   5. Instalamos JWT en React
+5. Instalamos JWT en React
       
-       - Instalar JWT-decode:
+    - Instalar JWT-decode:
    ```
    npm install jwt-decode
    ```
