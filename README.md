@@ -122,10 +122,6 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
    npm install tailwindcss @tailwindcss/cli
    npx tailwindcss init
    ```
-   - Instalar JWT-decode:
-   ```
-   npm install jwt-decode
-   ```
 
 3. Configurar Tailwind en tu proyecto:
    - Ahora, abre el archivo src/index.css y agrega lo siguiente al inicio del archivo:
@@ -151,6 +147,12 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
     "eject": "react-scripts eject"
      },
      ```
+   5. Instalamos JWT en React
+      
+       - Instalar JWT-decode:
+   ```
+   npm install jwt-decode
+   ```
 
 ### Comando para inicializar el proyecto
    ```
