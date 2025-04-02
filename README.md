@@ -12,7 +12,7 @@
 6. [Enlace a la Documentación](#enlace-a-la-documentación)
 7. [Enlace a Figma](#enlace-a-figma)
 8. [Conclusión](#conclusión)
-9. [Contribuciones Agradecimientos y Referencias](#contribuciones-agredecimientos-y-referencias)
+9. [Agradecimientos y Referencias](agredecimientos-y-referencias)
 10. [Licencias](#licencias)
 11. [Contacto](#contacto)
 
@@ -260,7 +260,7 @@ La interfaz de usuario ha sido diseñada en Figma y puedes ver el diseño comple
 
 Este proyecto ha sido una gran oportunidad para poner en práctica los conocimientos adquiridos durante el ciclo formativo. Me ha permitido combinar mis intereses en la tecnología con mi pasión por la lectura, creando una plataforma donde los usuarios pueden interactuar y compartir sus recomendaciones literarias. Además, he aprendido mucho sobre el desarrollo de aplicaciones web, la integración de APIs externas, y la gestión de bases de datos. A lo largo del proceso, he mejorado mis habilidades tanto en el backend como en el frontend, y estoy satisfecha con los resultados obtenidos.
 
-## Contribuciones, Agradecimientos y Referencias
+## Agradecimientos y Referencias
 
 - **Contribuciones:**  
   Agradezco a todos aquellos que han aportado ideas y sugerencias para mejorar la aplicación. También valoro el trabajo colaborativo que me ha permitido llevar a cabo este proyecto.
