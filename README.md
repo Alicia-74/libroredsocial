@@ -262,9 +262,6 @@ Este proyecto ha sido una gran oportunidad para poner en práctica los conocimie
 
 ## Agradecimientos y Referencias
 
-- **Contribuciones:**  
-  Agradezco a todos aquellos que han aportado ideas y sugerencias para mejorar la aplicación. También valoro el trabajo colaborativo que me ha permitido llevar a cabo este proyecto.
-
 - **Agradecimientos:**  
   Quiero agradecer a mi tutor Joaquín por su apoyo y orientación durante el desarrollo del proyecto. Sus recomendaciones fueron clave para mejorar tanto la arquitectura como las funcionalidades del sistema.
 
