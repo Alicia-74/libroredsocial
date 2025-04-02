@@ -101,7 +101,7 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
     spring.datasource.platform=mysql
     
     
-14. En el pom.xml añadir las siguientes dependemcias:
+14. En el pom.xml añadir las siguientes dependencias:
     - Spring Security:
     ```
     <dependency>
@@ -145,6 +145,20 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 			<version>2.2.0</version>
 		</dependency>
       ```
+      - La url para ver interfaz de Swagger:
+	```
+ 	http://localhost:8080/swagger-ui/index.html
+ 	```
+ 
+15. Añadir token key en application.properties:
+    - Primero lo genero en la terminal:
+     ```
+     openssl rand -base64 64
+     ```
+    - Añadirlo en application.properties:
+    ```
+    SECRET_KEY= token que te haya generado el comando anterior
+    ```
 
 ### Frontend
 1. Clona el repositorio:
