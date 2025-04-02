@@ -12,7 +12,7 @@
 6. [Enlace a la Documentación](#enlace-a-la-documentación)
 7. [Enlace a Figma](#enlace-a-figma)
 8. [Conclusión](#conclusión)
-9. [Agradecimientos y Referencias](#agredecimientos-y-referencias)
+9. [Agradecimientos y Referencias](#agradecimientos-y-referencias)
 10. [Licencias](#licencias)
 11. [Contacto](#contacto)
 
