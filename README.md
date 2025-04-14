@@ -284,6 +284,6 @@ Este proyecto está licenciado bajo la **MIT License**. Puedes obtener una copia
 Si tienes alguna pregunta o deseas más información sobre este proyecto, no dudes en contactarme:
 
 - **Correo Electrónico:** aliciahernandezcontreras7@gmail.com
-- **GitHub:** [https://github.com/tuusuario](https://github.com/Alicia-74)
-- **LinkedIn:** [https://www.linkedin.com/in/alicia-hernandez](https://www.linkedin.com/in/alicia-hernandez)
+- **GitHub:** [https://github.com/Alicia-74](https://github.com/Alicia-74)
+- **LinkedIn:** [https://www.linkedin.com/in/alicia-hernandez](https://www.linkedin.com/in/alicia-hern%C3%A1ndez-contreras-537101307/)
 
