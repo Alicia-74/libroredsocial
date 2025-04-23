@@ -1,0 +1,58 @@
+---
+title: "📖 Red Social para Amantes de los Libros"
+description: "Documentación del TFG - Desarrollo de Aplicaciones Web (DAW)"
+template: splash
+hero:
+  tagline: "Explora la documentación del TFG desarrollado por Alicia Hernández Contreras."
+  image:
+    file: ../../assets/image.png
+  actions:
+    - text: Explorar Documentación
+      link: /guides/inicio/
+      icon: right-arrow
+    - text: Ver en GitHub
+      link: https://github.com/Alicia-74/libroredsocial
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## 📌 Contenido Principal
+
+<CardGrid stagger>
+	<Card title="Diagrama de Casos de Uso" icon="flow">
+		Explora los casos de uso clave del proyecto.
+		[Ver más](guides/casos-de-uso/)
+	</Card>
+	<Card title="Diagrama de Clases" icon="layers">
+		Consulta la estructura de clases y relaciones.
+		[Ver más](guides/clases/)
+	</Card>
+	<Card title="Diagrama Entidad-Relación" icon="database">
+		Modelo de datos y relaciones en la base de datos.
+		[Ver más](guides/entidad-relacion/)
+	</Card>
+	<Card title="Diagrama de Componentes" icon="box">
+		Arquitectura de la aplicación con sus componentes.
+		[Ver más](guides/componentes/)
+	</Card>
+	<Card title="Diagrama de Actividades" icon="activity">
+		Flujo de actividades dentro del sistema.
+		[Ver más](guides/actividades/)
+	</Card>
+	<Card title="Diagrama de Secuencia" icon="shuffle">
+		Interacción temporal entre componentes.
+		[Ver más](guides/secuencia/)
+	</Card>
+	<Card title="Diagrama de Despliegue" icon="server">
+		Distribución de la aplicación en el entorno físico.
+		[Ver más](guides/despliegue/)
+	</Card>
+	<Card title="Casos de Prueba" icon="check-circle">
+		Revisión de pruebas y validaciones del sistema.
+		[Ver más](guides/pruebas/)
+	</Card>
+</CardGrid>
+
+
