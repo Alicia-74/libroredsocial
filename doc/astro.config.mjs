@@ -5,6 +5,10 @@ import starlight from '@astrojs/starlight';
 // https://astro.build/config
 export default defineConfig({
 	
+	build: {
+		// @ts-ignore
+		outDir: './docs',
+	  },
 	integrations: [
 		starlight({
 			title: 'My Docs',
