@@ -187,7 +187,7 @@ La pasión por los libros y la lectura, combinada con el deseo de crear una plat
 
 La documentación completa del proyecto está disponible en el siguiente enlace:
 
-[Documentación del Proyecto](https://enlace-a-tu-documentacion)
+[Documentación del Proyecto](https://libroredsocial.vercel.app/)
 
 ## Enlace a Figma
 
