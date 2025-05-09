@@ -125,20 +125,17 @@ const Profile = () => {
         Authorization: `Bearer ${sessionStorage.getItem("token")}`,
       },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Error al eliminar la imagen");
-        return res.json();
-      })
       .then(() => {
         // Actualizar el estado del usuario eliminando la imagen
         setUser((prev) => ({ ...prev, imageUrl: null }));
+        setImagePreview(null);  // Limpiar también la vista previa
       })
       .catch((err) => {
         console.error("Error al eliminar la imagen:", err);
         alert("Error al eliminar la imagen");
       });
   };
-
+  
   
   const handleBack = () => navigate("/");
 
