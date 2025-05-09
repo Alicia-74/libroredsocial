@@ -113,8 +113,8 @@ public class UserController {
                     user.getId(),
                     user.getUsername(), 
                     user.getEmail(),
-                    user.getDescription(),
                     user.getImageUrl(),
+                    user.getDescription(),
                     user.getTheme()))  // Aquí se crea el DTO
                 .toList();
     

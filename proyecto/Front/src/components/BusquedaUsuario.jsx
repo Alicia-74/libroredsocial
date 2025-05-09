@@ -125,7 +125,7 @@ const BusquedaUsuarios = () => {
                   className="flex items-center p-4 border-b dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   <img
-                    src={user.profilePicture && user.profilePicture !== "" ? user.profilePicture : "/icono.jpg"}
+                    src={user.imageUrl || "/icono.jpg"} // Imagen de perfil o icono por defecto
                     alt={user.username}
                     className="w-10 h-10 rounded-full object-cover"
                   />
