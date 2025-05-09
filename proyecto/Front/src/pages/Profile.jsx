@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaArrowLeft, FaCamera } from "react-icons/fa";
 import { FiSun, FiMoon, FiLogOut } from "react-icons/fi"; // Iconos de sol, luna y cerrar sesión
 import { useParams } from "react-router-dom"; // Para obtener parámetros de la URL
+import { FaTrash } from "react-icons/fa"; // Importar el ícono de la papelera
 import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import { jwtDecode } from "jwt-decode";
@@ -16,34 +17,36 @@ const Profile = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [newDescription, setNewDescription] = useState("");
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFile, setImageFile] = useState(null);  // Estado para la imagen seleccionada
+  const [imagePreview, setImagePreview] = useState(null); // Estado para la vista previa de la imagen
+
   const [activeTab, setActiveTab] = useState("mensajes");
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+  const token = sessionStorage.getItem("token");
+  if (!token) {
+    navigate("/login");
+    return;
+  }
 
-    const decoded = jwtDecode(token);
-    setCurrentUserId(decoded.sub);
+  const decoded = jwtDecode(token);
+  setCurrentUserId(decoded.sub);
 
-    fetch(`http://localhost:8080/api/users/${decoded.sub}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  fetch(`http://localhost:8080/api/users/${decoded.sub}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setUser(data); // Aquí obtienes toda la información del usuario, incluida la imagen
+      setNewDescription(data.description || "");
     })
-      .then((res) => res.json())
-      .then((data) => {
-        setUser(data);
-        setNewDescription(data.description || "");
-      })
-      .catch((err) => {
-        console.error("Error al obtener perfil", err);
-        navigate("/login");
-      });
-  }, [navigate]);
+    .catch((err) => {
+      console.error("Error al obtener perfil", err);
+      navigate("/login");
+    });
+}, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
@@ -62,7 +65,9 @@ const Profile = () => {
       },
       body: JSON.stringify({ description: newDescription }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        return res.json();
+      })
       .then(() => {
         setUser((prev) => ({ ...prev, description: newDescription }));
         setIsEditingDescription(false);
@@ -70,25 +75,66 @@ const Profile = () => {
       .catch((err) => console.error("Error al actualizar la descripción", err));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
-    const formData = new FormData();
-    formData.append("profilePicture", file);
+  
 
-    fetch(`http://localhost:8080/api/users/${currentUserId}/profile-picture`, {
-      method: "PUT",
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];  // Obtén el archivo seleccionado
+    if (file) {
+      setImageFile(file);  // Guarda el archivo
+      setImagePreview(URL.createObjectURL(file)); // Crea una URL temporal para previsualizar la imagen
+  
+      // Ahora vamos a enviar el archivo al servidor
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      // Realiza una petición PUT (o POST) para enviar el archivo al backend
+      fetch(`http://localhost:8080/api/users/${currentUserId}/profile-picture`, {
+        method: "PUT", // Método PUT o POST, dependiendo de tu API
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Autenticación, si es necesario
+        },
+        body: formData,  // Enviar el archivo como FormData
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Error al subir la imagen");
+          }
+          return res.json();  // Suponiendo que el backend devuelve la URL de la imagen guardada
+        })
+        .then((data) => {
+          console.log("Imagen actualizada", data);
+          // Actualiza el estado del usuario con la nueva imagen
+          setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
+        })
+        .catch((err) => {
+          console.error("Error al subir la imagen", err);
+        });
+    }
+  };
+
+
+  const handleDeleteProfilePicture = () => {
+    fetch(`http://localhost:8080/api/users/${currentUserId}/profile-picture/delete`, {
+      method: "DELETE",
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem("token")}`,
       },
-      body: formData,
     })
-      .then((res) => res.json())
-      .then((data) => {
-        setUser((prev) => ({ ...prev, profilePicture: data.profilePicture }));
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error al eliminar la foto de perfil");
+        }
+        return res.json();
       })
-      .catch((err) => console.error("Error al actualizar la foto de perfil", err));
+      .then(() => {
+        // Actualizamos el estado del usuario para que no tenga imagen
+        setUser((prevUser) => ({ ...prevUser, profilePicture: null }));
+      })
+      .catch((err) => {
+        console.error("Error al eliminar la foto de perfil", err);
+      });
   };
+  
 
   const handleBack = () => navigate("/");
 
@@ -102,7 +148,6 @@ const Profile = () => {
       <div className="max-w-xl mx-auto p-4">
         {/* Header */}
         <div className="relative border-b pb-2 flex items-center justify-center">
-          {/* Botón de volver */}
           <button
             onClick={handleBack}
             className="absolute left-0 text-gray-500 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
@@ -110,11 +155,7 @@ const Profile = () => {
           >
             <FaArrowLeft />
           </button>
-
-          {/* Nombre del usuario centrado */}
           <h1 className="text-xl font-bold text-center">{user.username}</h1>
-
-          {/* Botones de tema y logout a la derecha */}
           <div className="absolute right-0 flex items-center space-x-8">
             <button
               onClick={toggleTheme}
@@ -136,15 +177,31 @@ const Profile = () => {
         {/* Profile Image and Description */}
         <div className="flex flex-col items-center mt-4">
           <div className="relative">
-            {user.profilePicture ? (
-              <img src={user.profilePicture} alt="Perfil" className="w-28 h-28 rounded-full object-cover" />
+            {imagePreview || user.profilePicture ? (
+              <img
+                src={imagePreview || user.profilePicture}
+                alt="Perfil"
+                className="w-28 h-28 rounded-full object-cover"
+              />
             ) : (
               <FaUserCircle className="w-28 h-28 text-gray-500" />
             )}
             <label htmlFor="file-upload" className="absolute bottom-0 right-0 bg-blue-600 text-white p-1 rounded-full cursor-pointer">
               <FaCamera />
             </label>
-            <input type="file" id="file-upload" accept="image/*" onChange={handleImageChange} className="hidden" />
+            <input
+              type="file"
+              id="file-upload"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <button
+              onClick={handleDeleteProfilePicture}
+              className="mt-2 text-red-600 hover:text-red-800 transition"
+            >
+              <FaTrash size={18} />
+            </button>
           </div>
 
           {isEditingDescription ? (

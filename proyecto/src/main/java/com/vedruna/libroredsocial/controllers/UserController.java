@@ -4,16 +4,27 @@ import com.vedruna.libroredsocial.dto.UserDTO;
 import com.vedruna.libroredsocial.persistance.model.User;
 import com.vedruna.libroredsocial.persistance.repository.UserRepository;
 import com.vedruna.libroredsocial.security.auth.services.JWTServiceI;
+import com.vedruna.libroredsocial.services.Impl.UserServiceImpl;
+
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +36,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserServiceImpl userService;
 
     @Autowired
     private JWTServiceI jwtService; // Inyectamos el servicio de JWT
@@ -44,6 +58,7 @@ public class UserController {
             user.getId(),
             user.getUsername(),
             user.getEmail(),
+            user.getImageUrl(),
             user.getDescription(),
             user.getTheme()
         );
@@ -68,7 +83,8 @@ public class UserController {
                         user.getId(), 
                         user.getUsername(), 
                         user.getEmail(), 
-                        user.getDescription(), 
+                        user.getImageUrl(),
+                        user.getDescription(),
                         user.getTheme()))  // Mapeo de User a UserDTO
                 .collect(Collectors.toList());
 
@@ -93,7 +109,8 @@ public class UserController {
                     user.getUsername(), 
                     user.getEmail(),
                     user.getDescription(),
-                    user.getImageUrl()))  // Aquí se crea el DTO
+                    user.getImageUrl(),
+                    user.getTheme()))  // Aquí se crea el DTO
                 .toList();
     
         // Retornar los DTOs en la respuesta
@@ -127,5 +144,57 @@ public class UserController {
             return ResponseEntity.status(404).body("Usuario no encontrado");  // Si no se encuentra el usuario
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUserDescription(@PathVariable Integer id, @RequestBody UserDTO updatedUser) {
+        Optional<User> userOptional = userRepository.findById(id);
+
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.status(404).body("Usuario no encontrado.");
+        }
+
+        User user = userOptional.get();
+        
+        // Solo actualizamos la descripción aquí, puedes expandirlo si necesitas más campos
+        user.setDescription(updatedUser.getDescription());
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Descripción actualizada correctamente.");
+    }
+
+
+    // Actualizar la imagen de perfil
+    @PutMapping("/{id}/profile-picture")
+    public ResponseEntity<?> updateUserProfilePicture(@PathVariable Integer id, @RequestPart("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.status(400).body("No se ha enviado una imagen.");
+        }
+
+        // Guardar la imagen y obtener la URL
+        String imageUrl = userService.saveProfilePicture(file);
+
+        Optional<User> userOptional = userRepository.findById(id);
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.status(404).body("Usuario no encontrado.");
+        }
+
+        User user = userOptional.get();
+        user.setImageUrl(imageUrl);  // Actualizar la URL de la imagen del perfil
+
+        userRepository.save(user);  // Guardar el usuario actualizado
+
+        return ResponseEntity.ok("Foto de perfil actualizada correctamente.");
+    }
+
+
+    
+
+    @DeleteMapping("/{id}/profile-picture")
+    public ResponseEntity<String> deleteProfilePicture(@PathVariable Integer id) {
+        userService.deleteProfilePicture(id);
+        return ResponseEntity.ok("Imagen de perfil eliminada correctamente");
+    }
+   
 
 }

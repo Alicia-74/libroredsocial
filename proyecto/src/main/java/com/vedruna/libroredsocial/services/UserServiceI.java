@@ -6,6 +6,8 @@ import com.vedruna.libroredsocial.persistance.model.User;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface UserServiceI {
 
     Optional<User> getUserById(Integer id);
@@ -17,4 +19,8 @@ public interface UserServiceI {
     User save(User user);
 
     List<UserDTO> getAllUsers();
+    
+    String saveProfilePicture(MultipartFile file);
+    
+    void deleteProfilePicture(Integer userId);
 }

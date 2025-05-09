@@ -20,7 +20,7 @@ public class UserDTO {
      String theme; // campo para elegir el tema
 
     // Constructor que acepta los parámetros necesarios
-    public UserDTO(Integer id, String username, String email, String description, String theme) {
+    public UserDTO(Integer id, String username, String email, String imageUrl, String description, String theme) {
         this.id = id;
         this.username = username;
         this.email = email;
