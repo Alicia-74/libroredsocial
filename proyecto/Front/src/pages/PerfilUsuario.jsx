@@ -17,23 +17,24 @@ const PerfilUsuario = () => {
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (!token) {
-      // Si no hay token, redirige al login
       navigate("/login");
       return;
     }
 
-    const decoded = jwtDecode(token); // Decodificamos el token para obtener el ID
+    const decoded = jwtDecode(token);
     setCurrentUserId(decoded.sub);
 
-    // Petición para obtener datos del usuario por ID
-    fetch(`http://localhost:8080/api/users/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        // Validamos que followers y following sean arrays
+    // Función para cargar los datos del usuario
+    const loadUserData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        
+        // Asegurarse de que followers y following son arrays
         const safeData = {
           ...data,
           followers: Array.isArray(data.followers) ? data.followers : [],
@@ -41,17 +42,21 @@ const PerfilUsuario = () => {
         };
 
         setUser(safeData);
-
-        // Verificamos si el usuario actual ya sigue a este perfil
-        setIsFollowing(
-          safeData.followers.some((f) => f.id === decoded.sub)
-        );
-      })
-      .catch((err) => {
+        
+        // Verificar si el usuario actual sigue a este perfil
+        if (decoded.sub) {
+          setIsFollowing(
+            safeData.followers.some((f) => f.id === decoded.sub)
+          );
+        }
+      } catch (err) {
         console.error("Error al obtener perfil", err);
-        navigate("/login"); // Si falla, redirige al login
-      });
-  }, [id, navigate]);
+        navigate("/login");
+      }
+    };
+
+    loadUserData();
+  }, [id, navigate]); // Añade id y navigate como dependencias
 
   // Maneja la acción de "seguir"
   const handleFollow = () => {

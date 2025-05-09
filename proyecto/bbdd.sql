@@ -11,7 +11,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     description TEXT,
-    image_url VARCHAR(255),
+    image_url LONGTEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     theme VARCHAR(10) DEFAULT 'light'
 );

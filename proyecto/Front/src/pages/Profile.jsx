@@ -77,65 +77,69 @@ const Profile = () => {
 
   
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];  // Obtén el archivo seleccionado
-    if (file) {
-      setImageFile(file);  // Guarda el archivo
-      setImagePreview(URL.createObjectURL(file)); // Crea una URL temporal para previsualizar la imagen
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    console.log(file);  // Verifica que el archivo no sea nulo o vacío
+    if (!file) {
+      console.error("No file selected.");
+      return;
+    }
   
-      // Ahora vamos a enviar el archivo al servidor
-      const formData = new FormData();
-      formData.append("file", file);
+    // Mostrar vista previa localmente
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   
-      // Realiza una petición PUT (o POST) para enviar el archivo al backend
-      fetch(`http://localhost:8080/api/users/${currentUserId}/profile-picture`, {
-        method: "PUT", // Método PUT o POST, dependiendo de tu API
+    // Subir al servidor
+    const formData = new FormData();
+    formData.append("file", file);
+  
+    try {
+      const response = await fetch(`http://localhost:8080/api/users/${currentUserId}/upload-profile-image`, {
+        method: "POST",
         headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Autenticación, si es necesario
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
-        body: formData,  // Enviar el archivo como FormData
-      })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Error al subir la imagen");
-          }
-          return res.json();  // Suponiendo que el backend devuelve la URL de la imagen guardada
-        })
-        .then((data) => {
-          console.log("Imagen actualizada", data);
-          // Actualiza el estado del usuario con la nueva imagen
-          setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
-        })
-        .catch((err) => {
-          console.error("Error al subir la imagen", err);
-        });
+        body: formData,
+      });
+  
+      if (!response.ok) throw new Error("Error al subir la imagen");
+  
+      const updatedUser = await response.json();
+      console.log(updatedUser);
+  
+      // Aquí actualizamos la URL de la imagen del usuario
+      setUser((prev) => ({ ...prev, imageUrl: updatedUser.imageUrl })); // Actualiza el estado con la nueva URL de la imagen
+  
+    } catch (err) {
+      console.error("Error:", err);
+      alert(`Error al subir la imagen: ${err.message || err}`);
     }
   };
-
-
+  
+  
+  
   const handleDeleteProfilePicture = () => {
-    fetch(`http://localhost:8080/api/users/${currentUserId}/profile-picture/delete`, {
+    fetch(`http://localhost:8080/api/users/${currentUserId}/profile-picture`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem("token")}`,
       },
     })
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("Error al eliminar la foto de perfil");
-        }
+        if (!res.ok) throw new Error("Error al eliminar la imagen");
         return res.json();
       })
       .then(() => {
-        // Actualizamos el estado del usuario para que no tenga imagen
-        setUser((prevUser) => ({ ...prevUser, profilePicture: null }));
+        // Actualizar el estado del usuario eliminando la imagen
+        setUser((prev) => ({ ...prev, imageUrl: null }));
       })
       .catch((err) => {
-        console.error("Error al eliminar la foto de perfil", err);
+        console.error("Error al eliminar la imagen:", err);
+        alert("Error al eliminar la imagen");
       });
   };
-  
 
+  
   const handleBack = () => navigate("/");
 
   if (!user) return <div>Cargando...</div>;
@@ -177,9 +181,9 @@ const Profile = () => {
         {/* Profile Image and Description */}
         <div className="flex flex-col items-center mt-4">
           <div className="relative">
-            {imagePreview || user.profilePicture ? (
+            {imagePreview || user.imageUrl ? (
               <img
-                src={imagePreview || user.profilePicture}
+                src={imagePreview || user.imageUrl}
                 alt="Perfil"
                 className="w-28 h-28 rounded-full object-cover"
               />

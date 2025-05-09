@@ -12,8 +12,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,32 +76,50 @@ public class UserServiceImpl implements UserServiceI {
                 .collect(Collectors.toList());
     }
 
-
-    // Guardar la imagen de perfil y devolver la URL
-    @Override
+    
+        // Método para guardar la imagen como Base64 en la base de datos
+        @Override
     public String saveProfilePicture(MultipartFile file) {
         try {
-            String fileName = System.currentTimeMillis() + "-" + file.getOriginalFilename();
-            Path filePath = Paths.get("uploads/profile-pictures", fileName);
-            Files.createDirectories(filePath.getParent());
-            file.transferTo(filePath.toFile());
-
-            // Devolver la URL de la imagen guardada
-            return "/uploads/profile-pictures/" + fileName;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error al guardar la imagen de perfil.");
+            // Generar un nombre único para la imagen
+            String fileName = UUID.randomUUID().toString();
+            
+            // Guardar solo el nombre del archivo (no los datos de la imagen)
+            return fileName;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al procesar la imagen");
         }
     }
 
-    // Eliminar la imagen de perfil del almacenamiento
-    // Eliminar la imagen de perfil del almacenamiento
+    
+        // Método para actualizar la imagen de perfil
     @Override
-    public void deleteProfilePicture(Integer userId) {
-        userRepository.findById(userId).ifPresent(user -> {
+    public String uploadProfileImage(Integer userId, MultipartFile file) throws Exception {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + userId));
+    
+        // Convertir la imagen a Base64
+        byte[] imageBytes = file.getBytes();
+        String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+        
+        // Guardar la imagen en la base de datos con el prefijo "data:image/jpeg;base64,"
+        String imageWithPrefix = "data:" + file.getContentType() + ";base64," + base64Image;
+        user.setImageUrl(imageWithPrefix);
+    
+        userRepository.save(user);
+        
+        return imageWithPrefix; // Retornar la cadena base64
+    }
+    
+    
+        // Método para eliminar la imagen de perfil
+        @Override
+        public void deleteProfilePicture(Integer userId) {
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            
             user.setImageUrl(null);
             userRepository.save(user);
-        });
-    }
+        }
 }
 

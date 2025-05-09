@@ -21,6 +21,8 @@ public interface UserServiceI {
     List<UserDTO> getAllUsers();
     
     String saveProfilePicture(MultipartFile file);
-    
+
+    String uploadProfileImage(Integer userId, MultipartFile file) throws Exception;
+
     void deleteProfilePicture(Integer userId);
 }

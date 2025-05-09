@@ -9,14 +9,17 @@ import com.vedruna.libroredsocial.services.Impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +28,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -164,36 +169,35 @@ public class UserController {
     }
 
 
-    // Actualizar la imagen de perfil
-    @PutMapping("/{id}/profile-picture")
-    public ResponseEntity<?> updateUserProfilePicture(@PathVariable Integer id, @RequestPart("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.status(400).body("No se ha enviado una imagen.");
+    // Método para actualizar la imagen de perfil del usuario
+    @PostMapping("/{id}/upload-profile-image")
+    public ResponseEntity<Map<String, String>> uploadProfileImage(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+        try {
+            String imageUrl = userService.uploadProfileImage(id, file);
+
+            // Crear el mapa para devolver la respuesta
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Imagen subida correctamente");
+            response.put("imageUrl", imageUrl);  // Asegúrate de devolver la URL de la imagen
+
+            // Devolver la respuesta como un JSON
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            // En caso de error, devolver un mensaje de error como JSON
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-
-        // Guardar la imagen y obtener la URL
-        String imageUrl = userService.saveProfilePicture(file);
-
-        Optional<User> userOptional = userRepository.findById(id);
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.status(404).body("Usuario no encontrado.");
-        }
-
-        User user = userOptional.get();
-        user.setImageUrl(imageUrl);  // Actualizar la URL de la imagen del perfil
-
-        userRepository.save(user);  // Guardar el usuario actualizado
-
-        return ResponseEntity.ok("Foto de perfil actualizada correctamente.");
     }
-
 
     
 
+
     @DeleteMapping("/{id}/profile-picture")
-    public ResponseEntity<String> deleteProfilePicture(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteProfilePicture(@PathVariable Integer id) {
         userService.deleteProfilePicture(id);
-        return ResponseEntity.ok("Imagen de perfil eliminada correctamente");
+        return ResponseEntity.ok("Imagen de perfil eliminada");
     }
    
 
