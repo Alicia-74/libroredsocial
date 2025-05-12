@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext"; // Import ThemeContext
+import { useNavigate } from "react-router-dom"; // Import useNavigate para la navegación
 
 const Busqueda = ({
   searchTerm,
@@ -15,6 +16,8 @@ const Busqueda = ({
   const [books, setBooks] = useState([]); // Estado para los libros
   const [totalPages, setTotalPages] = useState(1); // Total de páginas
   const [totalItems, setTotalItems] = useState(0); // Total de elementos encontrados
+  const navigate = useNavigate();
+
 
   const categories = ["fantasy", "science", "history", "art", "biography", "computers", "romance"];
 
@@ -104,10 +107,15 @@ const Busqueda = ({
         {books.map((book) => (
           <div
             key={book.key}
-            className={`bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${
+            onClick={() => {
+              const olid = book.cover_edition_key || book.edition_key?.[0] || book.key?.split("/").pop();
+              if (olid) navigate(`/book/${olid}`);
+            }}
+            className={`cursor-pointer bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${
               theme === "dark" ? "dark:bg-gray-800" : ""
             }`}
           >
+
             {/* Imagen del libro */}
             <div className="w-full h-72 mb-4 flex justify-center items-center">
               {book.cover_i ? (

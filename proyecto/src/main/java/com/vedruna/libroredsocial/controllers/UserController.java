@@ -6,8 +6,6 @@ import com.vedruna.libroredsocial.persistance.repository.UserRepository;
 import com.vedruna.libroredsocial.security.auth.services.JWTServiceI;
 import com.vedruna.libroredsocial.services.Impl.UserServiceImpl;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +15,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,75 +46,151 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         Optional<User> userOptional = userRepository.findById(id);
-
+        
         if (!userOptional.isPresent()) {
             return ResponseEntity.status(404).body("Usuario no encontrado.");
         }
-
-        // Convertir la entidad User a UserDTO
+        
         User user = userOptional.get();
+        
+        // Convertimos las relaciones de seguidores y seguidos a listas de UserDTO completos
+        List<UserDTO> followers = user.getFollowers().stream()
+                .map(f -> new UserDTO(
+                        f.getFollower().getId(),
+                        f.getFollower().getUsername(),
+                        f.getFollower().getEmail(),
+                        f.getFollower().getImageUrl(),
+                        f.getFollower().getDescription(),
+                        f.getFollower().getTheme(),
+                        null, null  // Asignamos null para evitar un ciclo infinito
+                ))
+                .collect(Collectors.toList());
+        
+        List<UserDTO> following = user.getFollowing().stream()
+                .map(f -> new UserDTO(
+                        f.getFollowing().getId(),
+                        f.getFollowing().getUsername(),
+                        f.getFollowing().getEmail(),
+                        f.getFollowing().getImageUrl(),
+                        f.getFollowing().getDescription(),
+                        f.getFollowing().getTheme(),
+                        null, null  // Asignamos null para evitar un ciclo infinito
+                ))
+                .collect(Collectors.toList());
+        
+        // Ahora devolvemos un UserDTO con listas completas de seguidores y seguidos
         UserDTO userDTO = new UserDTO(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getImageUrl(),
-            user.getDescription(),
-            user.getTheme()
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getImageUrl(),
+                user.getDescription(),
+                user.getTheme(),
+                followers, // Lista de seguidores completos
+                following  // Lista de seguidos completos
         );
-
-        return ResponseEntity.ok(userDTO);  // Devolver el DTO
+        
+        return ResponseEntity.ok(userDTO);
     }
+
+    
 
     // Método GET para obtener todos los usuarios
     @GetMapping("/all")
     public ResponseEntity<?> getAllUsers() {
-        // Obtener todas las entidades User
         List<User> users = userRepository.findAll();
-
-        // Verificar si la lista está vacía
+    
         if (users.isEmpty()) {
-            return ResponseEntity.status(200).body("No hay usuarios registrados.");  // 200 OK aunque esté vacía
+            return ResponseEntity.status(200).body("No hay usuarios registrados.");
         }
-
-        // Convertir las entidades User a UserDTO
+    
         List<UserDTO> userDTOs = users.stream()
                 .map(user -> new UserDTO(
-                        user.getId(), 
-                        user.getUsername(), 
-                        user.getEmail(), 
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
                         user.getImageUrl(),
                         user.getDescription(),
-                        user.getTheme()))  // Mapeo de User a UserDTO
+                        user.getTheme(),
+                        // Convertir los seguidores a UserDTO completos
+                        user.getFollowers().stream()
+                                .map(f -> new UserDTO(
+                                        f.getFollower().getId(),
+                                        f.getFollower().getUsername(),
+                                        f.getFollower().getEmail(),
+                                        f.getFollower().getImageUrl(),
+                                        f.getFollower().getDescription(),
+                                        f.getFollower().getTheme(),
+                                        null, null // No necesitamos los seguidores de los seguidores para evitar ciclos infinitos
+                                ))
+                                .collect(Collectors.toList()),
+                        // Convertir los seguidos a UserDTO completos
+                        user.getFollowing().stream()
+                                .map(f -> new UserDTO(
+                                        f.getFollowing().getId(),
+                                        f.getFollowing().getUsername(),
+                                        f.getFollowing().getEmail(),
+                                        f.getFollowing().getImageUrl(),
+                                        f.getFollowing().getDescription(),
+                                        f.getFollowing().getTheme(),
+                                        null, null // No necesitamos los seguidos de los seguidos para evitar ciclos infinitos
+                                ))
+                                .collect(Collectors.toList())
+                ))
                 .collect(Collectors.toList());
-
-        return ResponseEntity.ok(userDTOs);  // Devolver la lista de UserDTO
+    
+        return ResponseEntity.ok(userDTOs);
     }
+    
 
     // Método GET para buscar los usuarios
     @GetMapping("/search/{username}")
     public ResponseEntity<?> searchUsersByPrefix(@PathVariable String username) {
-        // Buscar usuarios que empiecen con el prefijo de username
         List<User> users = userRepository.findByUsernameStartingWithIgnoreCase(username);
-    
-        // Si no se encuentran usuarios, retornar un 404
+
         if (users.isEmpty()) {
             return ResponseEntity.status(404).body("No se encontraron usuarios.");
         }
-    
-        // Convertir la lista de User a UserDTO
+
         List<UserDTO> userDTOs = users.stream()
                 .map(user -> new UserDTO(
-                    user.getId(),
-                    user.getUsername(), 
-                    user.getEmail(),
-                    user.getImageUrl(),
-                    user.getDescription(),
-                    user.getTheme()))  // Aquí se crea el DTO
-                .toList();
-    
-        // Retornar los DTOs en la respuesta
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getImageUrl(),
+                        user.getDescription(),
+                        user.getTheme(),
+                        // Convertir los seguidores a UserDTO completos
+                        user.getFollowers().stream()
+                                .map(f -> new UserDTO(
+                                        f.getFollower().getId(),
+                                        f.getFollower().getUsername(),
+                                        f.getFollower().getEmail(),
+                                        f.getFollower().getImageUrl(),
+                                        f.getFollower().getDescription(),
+                                        f.getFollower().getTheme(),
+                                        null, null // Evitar ciclos infinitos
+                                ))
+                                .collect(Collectors.toList()),
+                        // Convertir los seguidos a UserDTO completos
+                        user.getFollowing().stream()
+                                .map(f -> new UserDTO(
+                                        f.getFollowing().getId(),
+                                        f.getFollowing().getUsername(),
+                                        f.getFollowing().getEmail(),
+                                        f.getFollowing().getImageUrl(),
+                                        f.getFollowing().getDescription(),
+                                        f.getFollowing().getTheme(),
+                                        null, null // Evitar ciclos infinitos
+                                ))
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(userDTOs);
     }
+
+    
 
 
     // Método GET para obtener los detalles del usuario actual a partir del token
@@ -165,7 +235,10 @@ public class UserController {
 
         userRepository.save(user);
 
-        return ResponseEntity.ok("Descripción actualizada correctamente.");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Descripción actualizada correctamente.");
+        return ResponseEntity.ok(response);
+
     }
 
 

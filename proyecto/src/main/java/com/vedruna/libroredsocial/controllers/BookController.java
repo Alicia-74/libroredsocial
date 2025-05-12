@@ -5,12 +5,15 @@ import com.vedruna.libroredsocial.persistance.model.User;
 import com.vedruna.libroredsocial.persistance.model.UserBookFav;
 import com.vedruna.libroredsocial.persistance.model.UserBookRead;
 import com.vedruna.libroredsocial.persistance.repository.BookRepository;
+import com.vedruna.libroredsocial.persistance.repository.UserBookFavRepository;
+import com.vedruna.libroredsocial.persistance.repository.UserBookReadRepository;
 import com.vedruna.libroredsocial.persistance.repository.UserRepository;
 import com.vedruna.libroredsocial.services.BookServiceI;
 import com.vedruna.libroredsocial.services.UserBookFavServiceI;
 import com.vedruna.libroredsocial.services.UserBookReadServiceI;
-import com.vedruna.libroredsocial.services.UserServiceI;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -39,23 +44,34 @@ public class BookController {
     private UserRepository userRepository;
 
     @Autowired
-    private BookRepository bookRepository;
+    private UserBookReadRepository userBookReadRepository;
 
+    @Autowired
+    private UserBookFavRepository userBookFavRepository;
+
+    @Autowired
+    private BookServiceI bookService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @GetMapping("/external/book/{olid}")
-    public ResponseEntity<String> getBookFromOpenLibrary(@PathVariable String olid) {
-        String url = "https://openlibrary.org/works/" + olid + ".json";
-        RestTemplate restTemplate = new RestTemplate();
+    public ResponseEntity<?> getBookFromOpenLibrary(@PathVariable String olid) {
+        String url = "https://openlibrary.org/api/books?bibkeys=OLID:" + olid + "&format=json&jscmd=data";
         try {
-            String response = restTemplate.getForObject(url, String.class);
-            return ResponseEntity.ok(response);
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response == null || !response.containsKey("OLID:" + olid)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Libro no encontrado.");
+            }
+            return ResponseEntity.ok(response.get("OLID:" + olid));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Error al obtener el libro.");
         }
     }
 
 
-    @GetMapping("/external/book/{bookId}-L.jpg")
+
+    @GetMapping("/external/book/{olid}-L.jpg")
     public ResponseEntity<byte[]> getBookCover(@PathVariable String olid) {
         String imageUrl = "https://covers.openlibrary.org/b/olid/" + olid + "-L.jpg";
         RestTemplate restTemplate = new RestTemplate();
@@ -69,47 +85,84 @@ public class BookController {
         }
     }
 
+    @GetMapping("/fav/{userId}")
+    public ResponseEntity<List<Book>> getFavoriteBooks(@PathVariable Integer userId) {
+        List<Book> favoriteBooks = userBookFavService.getFavoriteBooksByUserId(userId);
+        return ResponseEntity.ok(favoriteBooks);
+    }
+
+    @GetMapping("/read/{userId}")
+    public ResponseEntity<List<Book>> getReadBooks(@PathVariable Integer userId) {
+        List<Book> readBooks = userBookReadService.getReadBooksByUserId(userId);
+        return ResponseEntity.ok(readBooks);
+    }
 
 
     //Añadir a la lista de leídos
     @PostMapping("/read/{userId}/{olid}")
-    public ResponseEntity<String> addBookToRead(@PathVariable Integer userId, @PathVariable String olid)  {
-        // Buscar el usuario y el libro por sus IDs
-        User user = userRepository.findUserById(userId);  // Asegúrate de tener un método en el servicio para encontrar al usuario
-        Book book = bookRepository.findByOlid(olid);  // Asegúrate de tener un método en el servicio para encontrar el libro
+    public ResponseEntity<?> addBookToRead(@PathVariable Integer userId, @PathVariable String olid) {
+        try {
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if (optionalUser.isEmpty()) {
+                return ResponseEntity.badRequest().body("Usuario no encontrado.");
+            }
+            User user = optionalUser.get();
 
-        if (user == null || book == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario o libro no encontrado.");
+            Book book = bookService.getBookByOlid(olid);
+            if (book == null) {
+                book = bookService.getBookInfoByOlid(olid);
+                if (book == null) {
+                    return ResponseEntity.badRequest().body("No se encontró información del libro.");
+                }
+                System.out.println("Book to save: " + book);
+                bookService.save(book);
+            }
+
+            if (!userBookReadRepository.existsByUserAndBook(user, book)) {
+                UserBookRead relation = new UserBookRead();
+                relation.setUser(user);
+                relation.setBook(book);
+                userBookReadRepository.save(relation);
+            }
+
+
+            return ResponseEntity.ok("Libro añadido a la lista de leídos.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al añadir el libro: " + e.getMessage());
         }
-
-        // Crear el objeto UserBookFav
-        UserBookRead userBookRead = new UserBookRead();
-        userBookRead.setUser(user);  // Asociar la instancia de usuario
-        userBookRead.setBook(book);  // Asociar la instancia del libro
-        
-        userBookReadService.addBookToRead(userBookRead);
-        return ResponseEntity.ok("Libro añadido a la lista de leídos.");
     }
 
+
+
     // Añadir a la lista de favoritos
-    @PostMapping("/fav/{userId}/{oild}")
-    public ResponseEntity<String> addBookToFav(@PathVariable Integer userId, @PathVariable String olid) {
-        // Buscar el usuario y el libro por sus IDs
-        User user = userRepository.findUserById(userId);  // Asegúrate de tener un método en el servicio para encontrar al usuario
-        Book book = bookRepository.findByOlid(olid);  // Asegúrate de tener un método en el servicio para encontrar el libro
+    @PostMapping("/fav/{userId}/{olid}")
+    public ResponseEntity<?> addBookToFav(@PathVariable Integer userId, @PathVariable String olid) {
+       try {
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if (optionalUser.isEmpty()) {
+                return ResponseEntity.badRequest().body("Usuario no encontrado.");
+            }
+            User user = optionalUser.get();
 
-        if (user == null || book == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario o libro no encontrado.");
-        }
+            Book book = bookService.getBookByOlid(olid);
+            if (book == null) {
+                book = bookService.getBookInfoByOlid(olid);
+                if (book == null) {
+                    return ResponseEntity.badRequest().body("No se encontró información del libro.");
+                }
+                bookService.save(book);
+            }
+            if (!userBookFavRepository.existsByUserAndBook(user, book)) {
+                UserBookFav relation = new UserBookFav();
+                relation.setUser(user); 
+                relation.setBook(book);
+                userBookFavRepository.save(relation);
+            }
 
-        // Crear el objeto UserBookFav
-        UserBookFav userBookFav = new UserBookFav();
-        userBookFav.setUser(user);  // Asociar la instancia de usuario
-        userBookFav.setBook(book);  // Asociar la instancia del libro
-
-        // Añadir el libro a los favoritos
-        userBookFavService.addBookToFav(userBookFav);
-        return ResponseEntity.ok("Libro añadido a la lista de favoritos.");
+            return ResponseEntity.ok("Libro añadido a la lista de leídos.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al añadir el libro: " + e.getMessage());
+        } 
     }
 
 

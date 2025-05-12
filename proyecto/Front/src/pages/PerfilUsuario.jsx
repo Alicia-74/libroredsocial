@@ -137,9 +137,9 @@ const PerfilUsuario = () => {
         <div className="flex items-center space-x-6 mb-6">
           {/* Foto de perfil */}
           <div>
-            {user.profilePicture ? (
+            {user.imageUrl ? (
               <img
-                src={user.profilePicture}
+                src={user.imageUrl}
                 alt="Foto de perfil"
                 className="w-28 h-28 rounded-full object-cover"
               />

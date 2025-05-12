@@ -14,6 +14,7 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(1); // Total de páginas
   const [selectedCategory, setSelectedCategory] = useState(""); // Categoría seleccionada
   const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
+  const [showLoginAlert, setShowLoginAlert] = useState(false); // Mostrar alerta si no hay token
   const booksPerPage = 10; // Libros por página
   const navigate = useNavigate();
 
@@ -74,6 +75,13 @@ const Home = () => {
   return (
     <div className={`bg-gray-100 min-h-screen py-10 ${theme === "dark" ? "dark:bg-gray-900 dark:text-white" : ""}`}>
       <div className="container mx-auto px-4">
+        {/* Alerta visual si no hay login */}
+        {showLoginAlert && (
+          <div className="mb-8 p-4 text-yellow-900 bg-yellow-100 border border-yellow-300 rounded-md text-center shadow-md transition duration-500">
+            ⚠️ Debes iniciar sesión para ver los detalles del libro. Redirigiendo...
+          </div>
+        )}
+        
         {/* Busqueda de Usuarios */}
         <div>
             <BusquedaUsuarios /> {/* Llamamos al componente BusquedaUsuarios */}
@@ -83,6 +91,7 @@ const Home = () => {
         <h2 className={`text-4xl font-bold mb-12 text-center ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
           {searchTerm ? `Resultados de búsqueda para "${searchTerm}"` : selectedCategory ? `Libros sobre ${selectedCategory}` : "Buscar Libros"}
         </h2>
+
 
         {/* Componente de búsqueda con ajuste de tamaño en pantallas pequeñas */}
         <div className="sm:w-full md:w-auto">
@@ -104,8 +113,25 @@ const Home = () => {
               key={book.key}
               className={`bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${theme === "dark" ? "dark:bg-gray-800" : ""}`}
               onClick={() => {
-                const olid = book.cover_edition_key || book.edition_key?.[0] || book.key?.split("/").pop();
-                navigate(`/book/${olid}`);
+                const token = sessionStorage.getItem("token");
+
+                // Si no hay token, mostramos la alerta y redirigimos
+                if (!token) {
+                  setShowLoginAlert(true);
+                  setTimeout(() => {
+                    setShowLoginAlert(false);
+                    navigate("/login");
+                  }, 3100); // 3 segundos
+                  return;
+                }
+
+                // Si está logueado, navegamos normalmente
+               const olid = book.cover_edition_key || book.edition_key?.[0] || book.key?.split("/").pop();
+                  if (olid) {
+                  navigate(`/book/${olid}`);
+                } else {
+                  console.error("No se encontró un identificador válido para este libro.");
+                }
               }}          
             >
               <div className="w-full h-72 mb-4 flex justify-center items-center">

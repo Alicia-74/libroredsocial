@@ -37,7 +37,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         
         // Excluir rutas públicas del filtro
         String uri = request.getRequestURI();
-        if (uri.contains("/api/v1/auth/") || uri.contains("/api/users/all") || uri.startsWith("/api/users/search/") || uri.contains("/api/books/fav") || uri.contains("/api/books/read") || uri.contains("/api/follow/")) {
+        if (uri.contains("/api/v1/auth/") || uri.contains("/api/users/all") || uri.startsWith("/api/users/search/") || uri.contains("/api/books/fav") || uri.contains("/api/books/read")  || uri.contains("/api/books/{userId}/read-books") || uri.contains("/api/books/{userId}/favorite-books") || uri.contains("/api/books/external/book/") || uri.contains("/api/follow/")) {
             filterChain.doFilter(request, response);
             return;
         }

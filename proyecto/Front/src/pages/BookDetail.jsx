@@ -15,7 +15,7 @@ const BookDetail = () => {
       setUserId(decoded.sub); // Asegúrate de usar el campo correcto
     }
 
-    fetch(`http://localhost:8080/api/external/book/${olid}`,{
+    fetch(`http://localhost:8080/api/books/external/book/${olid}`,{
         headers: {
         Authorization: `Bearer ${token}`
       }
@@ -36,7 +36,7 @@ const BookDetail = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         }
       });
 
@@ -52,7 +52,7 @@ const BookDetail = () => {
   return (
     <div className="flex p-8 space-x-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-white">
       <img
-        src={`http://localhost:8080/api/external/book/${olid}`}
+        src={`http://localhost:8080/api/books/external/book/${olid}-L.jpg`}
         alt={book.title}
         className="w-64 h-auto object-contain shadow-lg"
       />

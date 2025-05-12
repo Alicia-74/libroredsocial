@@ -10,6 +10,8 @@ public interface BookServiceI {
     List<Book> getAllBooks();
     
     Book getBookByOlid(String olid);
+
+    Book getBookInfoByOlid(String olid);
     
     Book addBook(Book book);
     

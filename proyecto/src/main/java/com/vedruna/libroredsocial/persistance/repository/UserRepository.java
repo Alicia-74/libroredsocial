@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     User findUserById(Integer id); 
     // Método para encontrar un usuario por nombre de usuario
     List<User> findByUsernameStartingWithIgnoreCase(String prefix);
+    // Método para encontrar un usuario por id
+    User getUserById(Integer userId);
 
     
 }

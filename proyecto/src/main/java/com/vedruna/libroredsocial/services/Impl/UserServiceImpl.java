@@ -58,23 +58,49 @@ public class UserServiceImpl implements UserServiceI {
         return userRepository.save(user);
     }
 
-   // Obtener todos los usuarios
+    // Obtener todos los usuarios con sus seguidores y seguidos completos
     @Override
     public List<UserDTO> getAllUsers() {
         // Obtener todas las entidades User
         List<User> users = userRepository.findAll();
-
-        // Convertir las entidades User a UserDTO
+    
+        // Convertir las entidades User a UserDTO con seguidores y seguidos completos
         return users.stream()
                 .map(user -> new UserDTO(
-                    user.getId(), 
-                    user.getUsername(), 
-                    user.getEmail(), 
-                    user.getImageUrl(),
-                    user.getDescription(), 
-                    user.getTheme()))
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getImageUrl(),
+                        user.getDescription(),
+                        user.getTheme(),
+                        // Convertir los seguidores a UserDTO completos
+                        user.getFollowers().stream()
+                                .map(f -> new UserDTO(
+                                        f.getFollower().getId(),
+                                        f.getFollower().getUsername(),
+                                        f.getFollower().getEmail(),
+                                        f.getFollower().getImageUrl(),
+                                        f.getFollower().getDescription(),
+                                        f.getFollower().getTheme(),
+                                        null, null // Evitar ciclos infinitos
+                                ))
+                                .collect(Collectors.toList()),
+                        // Convertir los seguidos a UserDTO completos
+                        user.getFollowing().stream()
+                                .map(f -> new UserDTO(
+                                        f.getFollowing().getId(),
+                                        f.getFollowing().getUsername(),
+                                        f.getFollowing().getEmail(),
+                                        f.getFollowing().getImageUrl(),
+                                        f.getFollowing().getDescription(),
+                                        f.getFollowing().getTheme(),
+                                        null, null // Evitar ciclos infinitos
+                                ))
+                                .collect(Collectors.toList())
+                ))
                 .collect(Collectors.toList());
     }
+    
 
     
         // Método para guardar la imagen como Base64 en la base de datos
