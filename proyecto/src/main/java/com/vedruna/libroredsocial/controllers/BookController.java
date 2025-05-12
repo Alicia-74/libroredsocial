@@ -1,5 +1,6 @@
 package com.vedruna.libroredsocial.controllers;
 
+import com.vedruna.libroredsocial.dto.BookDTO;
 import com.vedruna.libroredsocial.persistance.model.Book;
 import com.vedruna.libroredsocial.persistance.model.User;
 import com.vedruna.libroredsocial.persistance.model.UserBookFav;
@@ -59,15 +60,43 @@ public class BookController {
     public ResponseEntity<?> getBookFromOpenLibrary(@PathVariable String olid) {
         String url = "https://openlibrary.org/api/books?bibkeys=OLID:" + olid + "&format=json&jscmd=data";
         try {
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-            if (response == null || !response.containsKey("OLID:" + olid)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Libro no encontrado.");
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class); // ESTA LÍNEA FALTABA
+            Map<String, Object> bookData = (Map<String, Object>) response.get("OLID:" + olid);
+            BookDTO bookDTO = new BookDTO();
+
+            bookDTO.setTitle((String) bookData.get("title"));
+
+            Object desc = bookData.get("description");
+            if (desc instanceof String) {
+                bookDTO.setDescription((String) desc);
+            } else if (desc instanceof Map) {
+                bookDTO.setDescription((String) ((Map<String, Object>) desc).get("value"));
             }
-            return ResponseEntity.ok(response.get("OLID:" + olid));
+
+            List<Map<String, Object>> authors = (List<Map<String, Object>>) bookData.get("authors");
+            if (authors != null && !authors.isEmpty()) {
+                StringBuilder authorNames = new StringBuilder();
+                for (int i = 0; i < authors.size(); i++) {
+                    authorNames.append(authors.get(i).get("name"));
+                    if (i < authors.size() - 1) {
+                        authorNames.append(", ");
+                    }
+                }
+                bookDTO.setAuthor(authorNames.toString());
+            } else {
+                bookDTO.setAuthor("Autor desconocido");
+            }
+
+
+            bookDTO.setCoverUrl("http://localhost:8080/api/books/external/book/" + olid + "-L.jpg");
+
+            return ResponseEntity.ok(bookDTO);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Error al obtener el libro.");
         }
     }
+
 
 
 

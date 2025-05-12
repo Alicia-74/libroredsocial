@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext"; // Contexto para tema claro/oscuro
 import { FaSearch } from "react-icons/fa"; // Icono de lupa
 import { useNavigate } from "react-router-dom"; // Para redirección
@@ -12,6 +11,7 @@ const BusquedaUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]); // Resultados de búsqueda
   const [currentUserId, setCurrentUserId] = useState(null); // ID del usuario autenticado
   const [loading, setLoading] = useState(false); // Estado de carga
+  const [showLoginAlert, setShowLoginAlert] = useState(false); // Estado para mostrar alerta si no hay token
 
   const navigate = useNavigate();
 
@@ -36,6 +36,17 @@ const BusquedaUsuarios = () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem("token");
+
+      if (!token) {
+        setShowLoginAlert(true); // Mostrar alerta si no hay token
+        setTimeout(() => {
+          setShowLoginAlert(false);
+          navigate("/login"); // Redirigir al login después de unos segundos
+        }, 3000); // Espera de 3 segundos para redirigir
+
+        return; // Salir de la función si no hay token
+      }
+
       console.log("Token:", token);
       const response = await fetch(
         `http://localhost:8080/api/users/search/${term}`,
@@ -46,8 +57,7 @@ const BusquedaUsuarios = () => {
                 "Authorization": `Bearer ${token}` // Agregar el token de autorización
             }
         }
-    );
-
+      );
 
       if (response.status === 403) {
         throw new Error("Acceso no autorizado - Token inválido o expirado");
@@ -85,12 +95,20 @@ const BusquedaUsuarios = () => {
 
   return (
     <div className={`relative ${theme === "dark" ? "dark:bg-gray-900 dark:text-white" : ""}`}>
+      {/* Alerta si no hay token */}
+      {showLoginAlert && (
+        <div className="mb-8 p-4 text-yellow-900 bg-yellow-100 border border-yellow-300 rounded-md text-center shadow-md transition duration-500">
+          ⚠️ Debes iniciar sesión para buscar usuarios. Redirigiendo...
+        </div>
+      )}
+
       {/* Barra de búsqueda */}
       <div
         className={`flex items-center mb-8 w-full sm:w-60 md:w-26 lg:w-50 px-4 py-2 border rounded-md transition-all duration-200 
         ${theme === "dark"
           ? "bg-gray-700 text-white border-gray-600 focus-within:ring-2 focus-within:ring-blue-500"
-          : "bg-white text-gray-700 border-gray-300 focus-within:ring-2 focus-within:ring-gray-700"}`}>
+          : "bg-white text-gray-700 border-gray-300 focus-within:ring-2 focus-within:ring-gray-700"}`}
+      >
         <FaSearch className="text-gray-500 mr-2" />
         <input
           type="text"

@@ -16,6 +16,7 @@ const Busqueda = ({
   const [books, setBooks] = useState([]); // Estado para los libros
   const [totalPages, setTotalPages] = useState(1); // Total de páginas
   const [totalItems, setTotalItems] = useState(0); // Total de elementos encontrados
+  const [showLoginAlert, setShowLoginAlert] = useState(false); // For login alert
   const navigate = useNavigate();
 
 
@@ -38,8 +39,36 @@ const Busqueda = ({
       .catch((error) => console.error("Error searching books:", error));
   }, [searchTerm, currentPage, selectedCategory]); // Se ejecuta cuando cambia el término de búsqueda, la página actual o la categoría seleccionada
 
+  
+  useEffect(() => {
+    // Cuando se muestre la alerta, desplazamos la página hacia la parte superior
+    if (showLoginAlert) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [showLoginAlert]); // Este useEffect se activa cuando showLoginAlert cambia
+
+  const handleBookClick = (book) => {
+    const token = sessionStorage.getItem("token");
+
+    if (!token) {
+      setShowLoginAlert(true);
+      setTimeout(() => {
+        setShowLoginAlert(false);
+        navigate("/login"); // Redirigir al login después de 3 segundos
+      }, 3000); // 3 segundos de espera
+      return;
+    }
+  };
+  
   return (
     <div className={`mb-6 ${theme === "dark" ? "dark:bg-gray-900 dark:text-white" : ""}`}>
+     {/* Login Alert */}
+      {showLoginAlert && (
+        <div className="mb-8 p-4 text-yellow-900 bg-yellow-100 border border-yellow-300 rounded-md text-center shadow-md transition duration-500">
+          ⚠️ Debes iniciar sesión para ver los detalles del libro. Redirigiendo...
+        </div>
+      )}
+     
       {/* Buscador */}
       <div className="flex justify-center mb-6">
         <input
@@ -107,10 +136,7 @@ const Busqueda = ({
         {books.map((book) => (
           <div
             key={book.key}
-            onClick={() => {
-              const olid = book.cover_edition_key || book.edition_key?.[0] || book.key?.split("/").pop();
-              if (olid) navigate(`/book/${olid}`);
-            }}
+            onClick={() => handleBookClick(book)} // Call handleBookClick on book click
             className={`cursor-pointer bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${
               theme === "dark" ? "dark:bg-gray-800" : ""
             }`}

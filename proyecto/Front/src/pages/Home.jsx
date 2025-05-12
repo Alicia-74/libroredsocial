@@ -72,6 +72,16 @@ const Home = () => {
     window.scrollTo(0, 0); // Esto hará que la página se desplace hacia arriba
   }, [currentPage]); // Se ejecuta cada vez que cambie la página
 
+
+ // useEffect para desplazarse hacia arriba cuando la alerta se activa
+  useEffect(() => {
+    if (showLoginAlert) {
+      window.scrollTo(0, 0); // Esto hará que la página se desplace hacia arriba cuando se muestre la alerta
+    }
+  }, [showLoginAlert]); // Se ejecuta cada vez que cambia la visibilidad de la alerta
+
+
+
   return (
     <div className={`bg-gray-100 min-h-screen py-10 ${theme === "dark" ? "dark:bg-gray-900 dark:text-white" : ""}`}>
       <div className="container mx-auto px-4">
