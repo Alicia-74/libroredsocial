@@ -24,17 +24,17 @@ Esta documentación proporciona una visión completa del proyecto, incluyendo di
 
 
 #### 📌 Modelado UML
-- [Diagrama de Casos de Uso](./casos-de-uso)
-- [Diagrama de Clases](./clases)
-- [Diagrama Entidad-Relación](./entidad-relacion)
-- [Diagrama de Componentes](./componentes)
-- [Diagrama de Actividades](./actividades)
-- [Diagrama de Secuencia](./secuencia)
-- [Diagrama de Despliegue](./despliegue)
+- [Diagrama de Casos de Uso](../casos-de-uso)
+- [Diagrama de Clases](../clases)
+- [Diagrama Entidad-Relación](../entidad-relacion)
+- [Diagrama de Componentes](../componentes)
+- [Diagrama de Actividades](../actividades)
+- [Diagrama de Secuencia](../secuencia)
+- [Diagrama de Despliegue](../despliegue)
 
 
 #### 📌 Pruebas 
-- [Casos de Prueba](./prueba)
+- [Casos de Prueba](../prueba)
 
 ---
 
