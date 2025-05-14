@@ -3,73 +3,68 @@ title: "Diagrama de Componentes"
 description: "Explicación del diagrama de componentes del proyecto."
 ---
 
-El **Diagrama de Componentes** describe la arquitectura del sistema, mostrando cómo se organizan e interconectan los diferentes módulos que lo componen. Este diagrama es esencial para comprender la estructura técnica y el flujo de datos dentro de la plataforma **Red Social para Amantes de los Libros**.
+El **Diagrama de Componentes** representa la arquitectura lógica del sistema de la plataforma **Red Social para Amantes de los Libros**. En él se muestra la organización modular del software, evidenciando las responsabilidades de cada componente, sus interacciones y las tecnologías involucradas.
+
+---
 
 ## 🧩 Componentes Principales
 
-### 🖥️ Cliente Web
-- Aplicación accesible desde navegador y dispositivos móviles.
-- Permite a los usuarios interactuar con la plataforma.
-- Realiza solicitudes al servidor frontend.
+### 🖥️ Capa de Presentación
+- Compuesta por la **Interfaz de Usuario**.
+- Es accesible desde navegador o dispositivos móviles.
+- Permite a los usuarios visualizar y enviar información.
+- Se comunica directamente con la lógica de negocio.
 
-### 🎨 Servidor Frontend
-- Desarrollado con **React JS**, **Starlight** y **Tailwind CSS**.
-- Maneja la interfaz gráfica.
-- Permite el inicio de sesión mediante autenticación con **Google**.
-- Expone documentación a través de **Swagger**.
-- Se comunica con el backend vía HTTPS.
+---
 
-### ⚙️ Servidor Backend
-- Implementado con **Spring Boot**.
-- Gestiona la lógica del sistema y responde a las solicitudes del frontend.
-- Se conecta con la base de datos y servicios externos como OpenLibrary.
-- Expone endpoints protegidos mediante autenticación.
+### ⚙️ Capa de Lógica de Negocio
+Encargada del procesamiento y gestión central del sistema. Está conformada por los siguientes módulos:
 
-### 🔐 Autenticación y Autorización
-- Gestionada por **Spring Security**.
-- Controla el acceso y permisos de los usuarios.
-- Valida identidades antes de acceder a recursos protegidos.
+- **Autenticación y autorización**: Gestiona inicios de sesión y permisos mediante Google OAuth y Spring Security.
+- **Gestión de usuarios**: Registro, edición de perfil y eliminación de cuentas.
+- **Gestión de libros**: Búsqueda, consulta y administración de información bibliográfica.
+- **Gestión de listas de lectura**: Crear y administrar listas personalizadas de libros.
+- **Seguimiento de usuarios**: Funcionalidad de "follow" entre miembros de la red.
+- **Mensajería privada**: Comunicación directa entre usuarios registrados.
 
-### 📚 API Externa: OpenLibrary
-- Proporciona información adicional sobre libros.
-- Se consume desde el backend mediante solicitudes JSON.
+---
 
 ### 🗄️ Base de Datos
-- Sistema de almacenamiento gestionado con **MySQL**.
-- Guarda datos de usuarios, libros, listas, valoraciones, etc.
+- Motor: **MySQL**
+- Almacena de forma persistente toda la información relevante: usuarios, libros, listas, relaciones y mensajes.
 
-### 🐳 Despliegue con Docker
-- Toda la arquitectura está contenida en imágenes de **Docker**.
-- Facilita el despliegue y mantenimiento del sistema.
+---
+
+### 🌐 Servicios Externos
+La plataforma se apoya en servicios externos para extender sus funcionalidades:
+
+- **OpenLibrary API**: Fuente de información externa para datos bibliográficos.
+- **Google OAuth**: Servicio de autenticación segura mediante cuentas de Google.
 
 ---
 
 ## 🔁 Flujo de Información
 
-1. El usuario envía una solicitud desde la app.
-2. El servidor frontend gestiona la solicitud.
-3. Se verifica la autenticación (si aplica).
-4. El backend procesa la petición y accede a los datos necesarios.
-5. Puede consultar información externa (OpenLibrary).
-6. El backend responde con los datos al frontend.
-7. El frontend actualiza la interfaz con la información.
+1. El usuario interactúa con la **interfaz de usuario**.
+2. Las acciones se procesan en la **lógica de negocio**.
+3. Si es necesario, se consulta la **base de datos** o los **servicios externos**.
+4. El sistema devuelve respuestas y actualiza la interfaz.
 
 ---
 
 ## 🖼️ Diagrama Visual
 
-A continuación, se muestra el **Diagrama de Componentes** con las conexiones y tecnologías utilizadas:
+A continuación, se presenta el **Diagrama de Componentes** correspondiente al sistema:
 
 ![Diagrama de Componentes](../../../assets/diagrama-componentes.png)
 
-
-> 🧠 *Este diagrama facilita la comprensión del diseño modular de la aplicación, mostrando cómo se integran las tecnologías frontend y backend, así como el uso de APIs externas y contenedores para el despliegue.*
+> 🧠 *Este diagrama facilita la comprensión del diseño modular y funcional de la aplicación, identificando claramente las dependencias entre capas, el rol de los servicios externos y el flujo de datos principal.*
 
 ---
 
 ## 🛠️ Herramientas Utilizadas
-Este diagrama fue diseñado utilizando **Canvas**.
+Este diagrama fue diseñado utilizando **Lucid.app**.
 
 ---
 
-> _Conocer la arquitectura del sistema ayuda a comprender cómo fluye la información y cómo se integran las distintas tecnologías para ofrecer una experiencia completa al usuario._
+> _Comprender la arquitectura por componentes permite mantener, escalar y extender la aplicación de manera eficiente y ordenada._

@@ -7,40 +7,6 @@ El **Diagrama de Despliegue** describe la arquitectura física del sistema, most
 
 ---
 
-## 🐳 Arquitectura en Docker
-
-```plaintext
-┌──────────────────────────────────────────────┐
-│           🐳 Docker Host (Servidor)          │
-│                                              │
-│  ┌────────────────────────────────────────┐  │
-│  │         Contenedor: frontend          │  │
-│  │   - React JS                          │  │
-│  │   - Sirve la SPA (Single Page App)    │  │
-│  │   - Expone puerto 80/3000             │  │
-│  └───────────────▲────────────────────────┘  │
-│                  │ HTTP                      │
-│  ┌───────────────┴────────────────────────┐  │
-│  │        Contenedor: backend             │  │
-│  │   - Spring Boot                        │  │
-│  │   - Swagger UI                         │  │
-│  │   - Spring Security (OAuth con Google)│  │
-│  │   - Lógica de negocio REST             │  │
-│  │   - Cliente HTTP para OpenLibrary      │  │
-│  │   - Conexión JDBC a MySQL              │  │
-│  │   - Expone puerto 8080                 │  │
-│  └───────────────┬────────────────────────┘  │
-│                  │ JDBC                     │
-│  ┌───────────────▼────────────────────────┐  │
-│  │     Contenedor: base-de-datos          │  │
-│  │     - MySQL                            │  │
-│  │     - Volumen para persistencia        │  │
-│  │     - Puerto 3306                      │  │
-│  └────────────────────────────────────────┘  │
-│                                              │
-└──────────────────────────────────────────────┘
-```
----
 
 ## 🌐 Comunicaciones Externas
 
@@ -86,5 +52,10 @@ El **Diagrama de Despliegue** describe la arquitectura física del sistema, most
 - Las conexiones externas del backend (como Google OAuth y OpenLibrary) se realizan mediante **HTTPS/HTTP** para garantizar interoperabilidad y seguridad.
 
 ---
+
+## 🖼️ Diagrama Visual
+
+![Diagrama Entidad-Relación](../../../assets/diagrama-despliegue.png)
+
 
 > 🚀 Una arquitectura modular y robusta para una plataforma social moderna y mantenible.
