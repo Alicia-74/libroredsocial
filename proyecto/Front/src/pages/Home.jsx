@@ -1,110 +1,161 @@
 import React, { useState, useEffect, useContext } from "react";
-import Busqueda from "../components/Busqueda"; // Importar Busqueda
-import BusquedaUsuarios from "../components/BusquedaUsuario"; // Importar BusquedaUsuarios
+import Busqueda from "../components/Busqueda";
+import BusquedaUsuarios from "../components/BusquedaUsuario";
 import axios from "axios";
-import { debounce } from "lodash"; // Importar debounce para optimizar la búsqueda
-import { ThemeContext } from "../context/ThemeContext"; 
+import { debounce } from "lodash";
+import { ThemeContext } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
-
+import { FiBook, FiSearch, FiChevronLeft, FiChevronRight, FiAlertTriangle } from "react-icons/fi";
 
 const Home = () => {
-  const { theme } = useContext(ThemeContext); // Accedemos al tema actual
-  const [books, setBooks] = useState([]); // Estado para los libros
-  const [currentPage, setCurrentPage] = useState(1); // Página actual
-  const [totalPages, setTotalPages] = useState(1); // Total de páginas
-  const [selectedCategory, setSelectedCategory] = useState(""); // Categoría seleccionada
-  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
-  const [showLoginAlert, setShowLoginAlert] = useState(false); // Mostrar alerta si no hay token
-  const booksPerPage = 10; // Libros por página
+  const { theme } = useContext(ThemeContext);
+  const [books, setBooks] = useState([]);
+  const [defaultBooks, setDefaultBooks] = useState([]); // Nuevo estado para libros por defecto
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const booksPerPage = 10;
   const navigate = useNavigate();
 
+  const categories = [
+    { id: "fantasy", name: "Fantasía" },
+    { id: "science", name: "Ciencia" },
+    { id: "history", name: "Historia" },
+    { id: "art", name: "Arte" },
+    { id: "biography", name: "Biografías" },
+    { id: "computers", name: "Tecnología" },
+    { id: "romance", name: "Romance" }
+  ];
 
-  const categories = ["fantasy", "science", "history", "art", "biography", "computers", "romance"];
+  const hasActiveSearch = searchTerm || selectedCategory; // Determina si hay búsqueda activa
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    setSearchTerm(""); // Limpiar búsqueda cuando se selecciona una categoría
-    setCurrentPage(1); // Resetear a la primera página
+    setSearchTerm("");
+    setCurrentPage(1);
   };
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-    setSelectedCategory(""); // Limpiar categoría cuando se ingresa un término de búsqueda
-    setCurrentPage(1); // Resetear a la primera página
+    setSelectedCategory("");
+    setCurrentPage(1);
   };
 
-  // useEffect para cargar los libros según el término de búsqueda o la categoría seleccionada
+  // Efecto para cargar libros por defecto (solo una vez al montar el componente)
+  useEffect(() => {
+    const fetchDefaultBooks = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(
+          `https://openlibrary.org/subjects/fantasy.json?limit=${booksPerPage}`
+        );
+        setDefaultBooks(response.data.works || []);
+      } catch (error) {
+        console.error("Error fetching default books:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDefaultBooks();
+  }, []);
+
+  // Efecto para búsquedas activas
   useEffect(() => {
     const fetchBooks = debounce(() => {
-    let url = "";
+      if (!hasActiveSearch) return; // No hacer nada si no hay búsqueda activa
 
-    // Si hay un término de búsqueda
-    if (searchTerm) {
-      url = `https://openlibrary.org/search.json?q=${searchTerm}&limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
-    }
-    // Si hay una categoría seleccionada
-    else if (selectedCategory) {
-      url = `https://openlibrary.org/subjects/${selectedCategory}.json?limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
-    }
-    // Si no hay término de búsqueda ni categoría, mostrar libros por defecto
-    else {
-      url = `https://openlibrary.org/subjects/fantasy.json?limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
-    }
+      setIsLoading(true);
+      setError(null);
+      
+      let url = "";
+      if (searchTerm) {
+        url = `https://openlibrary.org/search.json?q=${searchTerm}&limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
+      } else if (selectedCategory) {
+        url = `https://openlibrary.org/subjects/${selectedCategory}.json?limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
+      }
 
-    axios.get(url)
-      .then((response) => {
-        // Asegúrate de que `response.data.works` existe antes de usarlo
-        const works = response.data.works || [];
-        setBooks(works); // Guardamos los libros en el estado
-        const numFound = response.data.numFound || (works.length * 10); // Para hacer un fallback si `numFound` no existe
-        setTotalPages(Math.ceil(numFound / booksPerPage)); // Calculamos el total de páginas correctamente
-      })
-      .catch((error) => console.error("Error fetching books:", error));
-    }, 500); // Espera 500ms después de dejar de escribir
+      axios.get(url)
+        .then((response) => {
+          const works = response.data.works || [];
+          setBooks(works);
+          const numFound = response.data.numFound || (works.length * 10);
+          setTotalPages(Math.ceil(numFound / booksPerPage));
+        })
+        .catch((error) => {
+          console.error("Error fetching books:", error);
+          setError("Error al cargar los libros. Por favor intenta nuevamente.");
+        })
+        .finally(() => setIsLoading(false));
+    }, 500);
 
     fetchBooks();
   
-    return () => fetchBooks.cancel(); // Cancela si el efecto vuelve a ejecutarse
-  }, [currentPage, selectedCategory, searchTerm]); // Se ejecuta cuando cambia la página actual, categoría o término de búsqueda
+    return () => fetchBooks.cancel();
+  }, [currentPage, selectedCategory, searchTerm, hasActiveSearch]);
 
-  // useEffect para desplazarse hacia arriba después de cambiar la página
   useEffect(() => {
-    window.scrollTo(0, 0); // Esto hará que la página se desplace hacia arriba
-  }, [currentPage]); // Se ejecuta cada vez que cambie la página
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
 
-
- // useEffect para desplazarse hacia arriba cuando la alerta se activa
   useEffect(() => {
     if (showLoginAlert) {
-      window.scrollTo(0, 0); // Esto hará que la página se desplace hacia arriba cuando se muestre la alerta
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [showLoginAlert]); // Se ejecuta cada vez que cambia la visibilidad de la alerta
-
-
+  }, [showLoginAlert]);
 
   return (
-    <div className={`bg-gray-100 min-h-screen py-10 ${theme === "dark" ? "dark:bg-gray-900 dark:text-white" : ""}`}>
-      <div className="container mx-auto px-4">
-        {/* Alerta visual si no hay login */}
+    <div className={`min-h-screen py-8 transition-colors duration-300 ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Alertas */}
         {showLoginAlert && (
-          <div className="mb-8 p-4 text-yellow-900 bg-yellow-100 border border-yellow-300 rounded-md text-center shadow-md transition duration-500">
-            ⚠️ Debes iniciar sesión para ver los detalles del libro. Redirigiendo...
+          <div className="mb-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md shadow-md animate-fade-in">
+            <div className="flex items-center">
+              <FiAlertTriangle className="mr-2 text-xl" />
+              <p>Debes iniciar sesión para ver los detalles del libro. Redirigiendo...</p>
+            </div>
           </div>
         )}
         
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-md shadow-md">
+            <div className="flex items-center">
+              <FiAlertTriangle className="mr-2 text-xl" />
+              <p>{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Header */}
+        <header className="mb-12 text-center">
+          <div className="flex justify-center mb-6">
+            <FiBook className="text-4xl text-indigo-600" />
+          </div>
+          <h1 className="text-4xl font-bold mb-4">
+            {searchTerm 
+              ? `Resultados para "${searchTerm}"` 
+              : selectedCategory 
+                ? `${categories.find(c => c.id === selectedCategory)?.name || selectedCategory}` 
+                : "Explora Nuestra Biblioteca"}
+          </h1>
+          <p className="text-lg opacity-90">
+            {searchTerm || selectedCategory 
+              ? "Encuentra tu próximo libro favorito" 
+              : "Descubre miles de libros en diferentes categorías"}
+          </p>
+        </header>
+
         {/* Busqueda de Usuarios */}
-        <div>
-            <BusquedaUsuarios /> {/* Llamamos al componente BusquedaUsuarios */}
+        <div className="mb-10">
+          <BusquedaUsuarios />
         </div>
         
-        {/* El h2 muestra dinámicamente el término de búsqueda */}
-        <h2 className={`text-4xl font-bold mb-12 text-center ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
-          {searchTerm ? `Resultados de búsqueda para "${searchTerm}"` : selectedCategory ? `Libros sobre ${selectedCategory}` : "Buscar Libros"}
-        </h2>
-
-
-        {/* Componente de búsqueda con ajuste de tamaño en pantallas pequeñas */}
-        <div className="sm:w-full md:w-auto">
+        {/* Componente de búsqueda */}
+        <div className="max-w-3xl mx-auto mb-12">
           <Busqueda
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -113,88 +164,137 @@ const Home = () => {
             setCurrentPage={setCurrentPage}
             selectedCategory={selectedCategory}
             onCategoryChange={handleCategoryChange}
+            categories={categories}
           />
         </div>
 
-       {/* Render libros ya cargados */}
-       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-          {books.map((book) => (
-            <div
-              key={book.key}
-              className={`bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${theme === "dark" ? "dark:bg-gray-800" : ""}`}
-              onClick={() => {
-                const token = sessionStorage.getItem("token");
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center my-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          </div>
+        )}
 
-                // Si no hay token, mostramos la alerta y redirigimos
-                if (!token) {
-                  setShowLoginAlert(true);
-                  setTimeout(() => {
-                    setShowLoginAlert(false);
-                    navigate("/login");
-                  }, 3100); // 3 segundos
-                  return;
-                }
-
-                // Si está logueado, navegamos normalmente
-               const olid = book.cover_edition_key || book.edition_key?.[0] || book.key?.split("/").pop();
-                  if (olid) {
-                  navigate(`/book/${olid}`);
-                } else {
-                  console.error("No se encontró un identificador válido para este libro.");
-                }
-              }}          
-            >
-              <div className="w-full h-72 mb-4 flex justify-center items-center">
-                {book.cover_id || book.cover_i ? (
-                  <img
-                    src={`https://covers.openlibrary.org/b/id/${book.cover_id || book.cover_i}-L.jpg`}
-                    alt={book.title}
-                    className="object-contain w-full h-full rounded-md"
-                  />
-                ) : (
-                  <div className="bg-gray-300 w-full h-full flex justify-center items-center text-gray-600 text-lg">
-                    No disponible
+        {/* Contenido condicional */}
+        {!isLoading && (
+          <>
+            {/* Mostrar resultados de búsqueda si hay búsqueda activa */}
+            {hasActiveSearch ? (
+              <>
+                {/* Grid de libros de búsqueda */}
+                {books.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {books.map((book) => (
+                      <div
+                        key={book.key}
+                        className={`group relative rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
+                        onClick={() => {
+                          const token = sessionStorage.getItem("token");
+                          if (!token) {
+                            setShowLoginAlert(true);
+                            setTimeout(() => {
+                              setShowLoginAlert(false);
+                              navigate("/login");
+                            }, 3100);
+                            return;
+                          }
+                          const olid = book.cover_edition_key || book.edition_key?.[0] || book.key?.split("/").pop();
+                          if (olid) {
+                            navigate(`/book/${olid}`);
+                          }
+                        }}
+                      >
+                        <div className="aspect-[2/3] bg-gray-200 relative">
+                          {book.cover_id || book.cover_i ? (
+                            <img
+                              src={`https://covers.openlibrary.org/b/id/${book.cover_id || book.cover_i}-L.jpg`}
+                              alt={book.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col justify-center items-center p-4 text-center">
+                              <FiBook className="text-4xl text-gray-400 mb-2" />
+                              <span className="text-gray-500">Portada no disponible</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className={`font-semibold text-lg mb-1 line-clamp-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
+                            {book.title}
+                          </h3>
+                          <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+                            {book.authors?.map(a => a.name).join(", ") || book.author_name?.join(", ") || "Autor desconocido"}
+                          </p>
+                        </div>
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer">
+                          <span className="text-white font-medium bg-black bg-opacity-70 px-3 py-1 rounded-full text-sm">
+                            Ver detalles
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
-              </div>
-              <h3 className={`text-xl font-semibold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
-                {book.title}
-              </h3>
-              <p className={`text-md ${theme === "dark" ? "text-gray-300" : "text-gray-600"} mt-2`}>
-                {book.authors?.map(a => a.name).join(", ") || book.author_name?.join(", ") || "Autor desconocido"}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Paginación (visible en todas las pantallas) */}
-        {totalPages > 1 && (
-          <div className="flex mt-12 justify-center items-center space-x-4">
-            {/* Botón "Anterior" */}
-            {currentPage > 1 && (
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                className={`px-6 py-3 rounded-lg shadow-lg ${theme === "dark" ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-300 text-gray-900 hover:bg-gray-200"}`}
-              >
-                Anterior
-              </button>
+              </>
+            ) : (
+              /* Mostrar libros por defecto cuando no hay búsqueda activa */
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+                  {defaultBooks.map((book) => (
+                    <div
+                      key={book.key}
+                      className={`group relative rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
+                      onClick={() => {
+                        const token = sessionStorage.getItem("token");
+                        if (!token) {
+                          setShowLoginAlert(true);
+                          setTimeout(() => {
+                            setShowLoginAlert(false);
+                            navigate("/login");
+                          }, 3100);
+                          return;
+                        }
+                        const olid = book.cover_edition_key || book.edition_key?.[0] || book.key?.split("/").pop();
+                        if (olid) {
+                          navigate(`/book/${olid}`);
+                        }
+                      }}
+                    >
+                      <div className="aspect-[2/3] bg-gray-200 relative">
+                        {book.cover_id || book.cover_i ? (
+                          <img
+                            src={`https://covers.openlibrary.org/b/id/${book.cover_id || book.cover_i}-L.jpg`}
+                            alt={book.title}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col justify-center items-center p-4 text-center">
+                            <FiBook className="text-4xl text-gray-400 mb-2" />
+                            <span className="text-gray-500">Portada no disponible</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className={`font-semibold text-lg mb-1 line-clamp-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
+                          {book.title}
+                        </h3>
+                        <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+                          {book.authors?.map(a => a.name).join(", ") || book.author_name?.join(", ") || "Autor desconocido"}
+                        </p>
+                      </div>
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer">
+                        <span className="text-white font-medium bg-black bg-opacity-70 px-3 py-1 rounded-full text-sm">
+                          Ver detalles
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
-
-            {/* Indicador de página */}
-            <span className={`text-xl font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-              Página {currentPage} de {totalPages}
-            </span>
-
-            {/* Botón "Siguiente" */}
-            {currentPage < totalPages && (
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                className={`px-6 py-3 rounded-lg shadow-lg ${theme === "dark" ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-300 text-gray-900 hover:bg-gray-200"}`}
-              >
-                Siguiente
-              </button>
-            )}
-          </div>
+          </>
         )}
       </div>
     </div>

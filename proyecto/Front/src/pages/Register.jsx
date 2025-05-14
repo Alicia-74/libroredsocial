@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -9,25 +9,28 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setSuccessMessage("");
 
-    // Validación básica de los campos
     if (!username || !email || !password) {
       setError("Por favor, complete todos los campos.");
+      setIsLoading(false);
       return;
     }
 
-    // Validación de formato de email
     const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
     if (!emailRegex.test(email)) {
       setError("Por favor, ingrese un correo electrónico válido.");
+      setIsLoading(false);
       return;
     }
 
-    // Realizamos la petición de registro usando fetch
     try {
       const response = await fetch("http://localhost:8080/api/v1/auth/register", {
         method: "POST",
@@ -42,31 +45,24 @@ const Register = () => {
       });
 
       if (response.ok) {
-        setSuccessMessage("Usuario registrado con éxito.");
-        setError(""); // Limpiar cualquier mensaje de error anterior
-
-        // Limpiar los campos de entrada después del registro
+        setSuccessMessage("Registro exitoso. Redirigiendo...");
         setUsername("");
         setEmail("");
         setPassword("");
-
-        // Redirigir después de 2 segundos
+        
         setTimeout(() => {
-          navigate("/login"); // Redirige a la página de login
-        }, 2000);
+          navigate("/login");
+        }, 800);
       } else {
         const errorData = await response.json();
-        // Verificamos si el error es relacionado al email
-        if (errorData.message && errorData.message.includes("correo")) {
-          setError("El correo electrónico ya está registrado.");
-        } else {
-          setError(errorData.message || "Hubo un error al registrar el usuario.");
-        }
-        setSuccessMessage(""); // Limpiar el mensaje de éxito si ocurre un error
+        setError(errorData.message.includes("correo") 
+          ? "El correo electrónico ya está registrado" 
+          : errorData.message || "Error al registrar usuario");
       }
     } catch (err) {
-      setError(err.message || "Error de red.");
-      setSuccessMessage(""); // Limpiar el mensaje de éxito si ocurre un error
+      setError(err.message || "Error de conexión con el servidor.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,96 +71,140 @@ const Register = () => {
   };
 
   return (
-    <div
-      className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 flex justify-center items-center"
-      style={{ height: "calc(100vh - 70px)" }}
-    >
-      <div className="w-full max-w-sm sm:max-w-md px-4 sm:px-8 py-4 sm:py-6 bg-white rounded-2xl shadow-lg">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-center text-gray-900 mb-6">
-          Crear Cuenta
-        </h2>
-
-        {error && <p className="text-red-500 text-xs sm:text-sm mb-4 text-center">{error}</p>}
-        {successMessage && (
-          <p className="text-green-500 text-xs sm:text-sm mb-4 text-center">{successMessage}</p>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label htmlFor="username" className="block text-xs sm:text-sm font-medium text-gray-700">
-              Nombre de Usuario
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                id="username"
-                placeholder="Ingrese su nombre de usuario"
-                className="w-full mt-1 p-2 sm:p-3 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                onChange={(e) => setUsername(e.target.value)}
-                value={username}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-700">
-              Correo Electrónico
-            </label>
-            <div className="relative">
-              <input
-                type="email"
-                id="email"
-                placeholder="Ingrese su correo electrónico"
-                className="w-full mt-1 p-2 sm:p-3 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-                required
-              />
-              <FaEnvelope className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-gray-700">
-              Contraseña
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Ingrese su contraseña"
-                className="w-full mt-1 p-2 sm:p-3 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                onChange={(e) => setPassword(e.target.value)}
-                value={password}
-                required
-              />
-              <FaLock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
-              <div
-                onClick={togglePasswordVisibility}
-                className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
-              >
-                {showPassword ? <FaEyeSlash className="text-gray-500" /> : <FaEye className="text-gray-500" />}
+    <div className="flex flex-col" style={{ height: "calc(100vh - 100px)" }}>
+      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="w-full max-w-xs sm:max-w-md bg-white rounded-xl shadow-lg overflow-hidden" style={{ minHeight: "400px" }}>
+          {/* Header con gradiente */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <FaUser className="text-white text-xl" />
               </div>
             </div>
+            <h2 className="text-xl font-bold text-white">Crear Cuenta</h2>
+            <p className="text-blue-100 text-xs mt-1">Completa tus datos para registrarte</p>
           </div>
 
-          <button
-            type="submit"
-            className="w-full p-3 sm:p-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-          >
-            Registrarse
-          </button>
+          {/* Contenido ajustado */}
+          <div className="p-5 space-y-4">
+            {error && (
+              <div className="p-2 bg-red-50 border-l-4 border-red-500 text-red-700 rounded text-xs">
+                {error}
+              </div>
+            )}
 
-          <div className="mt-4 sm:mt-3 text-center">
-            <p className="text-xs sm:text-sm text-gray-600">
-              ¿Ya tienes cuenta?{" "}
-              <a href="/login" className="text-blue-500 hover:text-blue-700">
-                Inicia sesión
-              </a>
-            </p>
+            {successMessage && (
+              <div className="p-2 bg-green-50 border-l-4 border-green-500 text-green-700 rounded text-xs">
+                {successMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="username" className="block text-xs font-medium text-gray-700 mb-1">
+                  Nombre de Usuario
+                </label>
+                <div className="relative">
+                  <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type="text"
+                    id="username"
+                    placeholder="Tu nombre de usuario"
+                    className="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500"
+                    onChange={(e) => setUsername(e.target.value)}
+                    value={username}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
+                  Correo Electrónico
+                </label>
+                <div className="relative">
+                  <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type="email"
+                    id="email"
+                    placeholder="ejemplo@correo.com"
+                    className="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500"
+                    onChange={(e) => setEmail(e.target.value)}
+                    value={email}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-xs font-medium text-gray-700 mb-1">
+                  Contraseña
+                </label>
+                <div className="relative">
+                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    placeholder="••••••••"
+                    className="w-full pl-9 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500"
+                    onChange={(e) => setPassword(e.target.value)}
+                    value={password}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  >
+                    {showPassword ? (
+                      <FaEyeSlash className="text-gray-400 text-sm" />
+                    ) : (
+                      <FaEye className="text-gray-400 text-sm" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`w-full py-2 px-4 text-xs rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Procesando...
+                  </span>
+                ) : (
+                  "Registrarse"
+                )}
+              </button>
+            </form>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-2 bg-white text-xs text-gray-500">
+                  ¿Ya tienes una cuenta?
+                </span>
+              </div>
+            </div>
+
+            <a
+              href="/login"
+              className="block w-full py-2 px-4 text-xs text-center border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              Iniciar Sesión
+            </a>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
