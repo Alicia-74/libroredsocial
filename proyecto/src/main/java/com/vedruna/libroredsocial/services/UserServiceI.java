@@ -25,4 +25,10 @@ public interface UserServiceI {
     String uploadProfileImage(Integer userId, MultipartFile file) throws Exception;
 
     void deleteProfilePicture(Integer userId);
+
+    String getUserTheme(String username);
+    
+    void updateUserTheme(String username, String theme);
+
+    UserDTO getUserDtoById(Integer id);
 }

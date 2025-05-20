@@ -1,10 +1,14 @@
 package com.vedruna.libroredsocial.services.Impl;
 
+import com.vedruna.libroredsocial.dto.UserDTO;
 import com.vedruna.libroredsocial.persistance.model.Follow;
 import com.vedruna.libroredsocial.persistance.model.User;
 import com.vedruna.libroredsocial.persistance.repository.FollowRepository;
 import com.vedruna.libroredsocial.persistance.repository.UserRepository;
 import com.vedruna.libroredsocial.services.FollowServiceI;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +66,43 @@ public class FollowServiceImpl implements FollowServiceI {
 
         // Eliminar la relación de seguimiento
         followRepository.delete(follow);
+    }
+
+
+    @Override
+    public boolean isFollowing(Integer followerId, Integer followingId) {
+        return followRepository.existsByFollower_IdAndFollowing_Id(followerId, followingId);
+    }
+
+    @Override
+    public List<UserDTO> getFollowing(Integer userId) {
+          List<Follow> following = followRepository.findFollowingByUserId(userId);
+          return following.stream()
+            .map(f -> mapToUserDTO(f.getFollowing()))
+            .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<UserDTO> getFollowers(Integer userId) {
+       List<Follow> followers = followRepository.findFollowersByUserId(userId);
+        return followers.stream()
+            .map(f -> mapToUserDTO(f.getFollower()))
+            .collect(Collectors.toList());
+    }
+
+    private UserDTO mapToUserDTO(User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getImageUrl(),
+                user.getDescription(),
+                user.getTheme(),
+                user.getCreatedAt(),
+                null, // No incluimos seguidores para evitar recursividad
+                null  // No incluimos seguidos para evitar recursividad
+        );
     }
 
 }

@@ -5,7 +5,7 @@ import axios from "axios";
 import { debounce } from "lodash";
 import { ThemeContext } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
-import { FiBook, FiSearch, FiChevronLeft, FiChevronRight, FiAlertTriangle } from "react-icons/fi";
+import { FiBook,FiAlertTriangle } from "react-icons/fi";
 
 const Home = () => {
   const { theme } = useContext(ThemeContext);

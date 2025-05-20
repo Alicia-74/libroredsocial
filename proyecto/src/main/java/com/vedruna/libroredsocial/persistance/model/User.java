@@ -38,7 +38,7 @@ public class User implements Serializable {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "theme", nullable = false, length = 10, columnDefinition = "VARCHAR(10) DEFAULT 'light'")
-    private String theme; // campo para elegir el tema
+    private String theme = "light";
 
     // Relaciones con otros modelos
     @OneToMany(mappedBy = "user")

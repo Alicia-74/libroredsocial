@@ -39,7 +39,6 @@ public class AuthService implements AuthServiceI {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setTheme(request.getTheme() != null ? request.getTheme() : "light"); // Asignar 'light' si no se pasa un tema
         userRepo.save(user);
     }
 }

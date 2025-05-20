@@ -45,52 +45,7 @@ public class UserController {
     // Método GET para obtener un usuario por ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.status(404).body("Usuario no encontrado.");
-        }
-        
-        User user = userOptional.get();
-        
-        // Convertimos las relaciones de seguidores y seguidos a listas de UserDTO completos
-        List<UserDTO> followers = user.getFollowers().stream()
-                .map(f -> new UserDTO(
-                        f.getFollower().getId(),
-                        f.getFollower().getUsername(),
-                        f.getFollower().getEmail(),
-                        f.getFollower().getImageUrl(),
-                        f.getFollower().getDescription(),
-                        f.getFollower().getTheme(),
-                        null, null  // Asignamos null para evitar un ciclo infinito
-                ))
-                .collect(Collectors.toList());
-        
-        List<UserDTO> following = user.getFollowing().stream()
-                .map(f -> new UserDTO(
-                        f.getFollowing().getId(),
-                        f.getFollowing().getUsername(),
-                        f.getFollowing().getEmail(),
-                        f.getFollowing().getImageUrl(),
-                        f.getFollowing().getDescription(),
-                        f.getFollowing().getTheme(),
-                        null, null  // Asignamos null para evitar un ciclo infinito
-                ))
-                .collect(Collectors.toList());
-        
-        // Ahora devolvemos un UserDTO con listas completas de seguidores y seguidos
-        UserDTO userDTO = new UserDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getImageUrl(),
-                user.getDescription(),
-                user.getTheme(),
-                followers, // Lista de seguidores completos
-                following  // Lista de seguidos completos
-        );
-        
-        return ResponseEntity.ok(userDTO);
+        return ResponseEntity.ok(userService.getUserDtoById(id));
     }
 
     
@@ -111,7 +66,8 @@ public class UserController {
                         user.getEmail(),
                         user.getImageUrl(),
                         user.getDescription(),
-                        user.getTheme(),
+                        user.getTheme() == null ? "light" : user.getTheme(),
+                        user.getCreatedAt(),
                         // Convertir los seguidores a UserDTO completos
                         user.getFollowers().stream()
                                 .map(f -> new UserDTO(
@@ -120,7 +76,8 @@ public class UserController {
                                         f.getFollower().getEmail(),
                                         f.getFollower().getImageUrl(),
                                         f.getFollower().getDescription(),
-                                        f.getFollower().getTheme(),
+                                        f.getFollower().getTheme() == null ? "light" : user.getTheme(),
+                                        f.getFollower().getCreatedAt(),
                                         null, null // No necesitamos los seguidores de los seguidores para evitar ciclos infinitos
                                 ))
                                 .collect(Collectors.toList()),
@@ -132,7 +89,8 @@ public class UserController {
                                         f.getFollowing().getEmail(),
                                         f.getFollowing().getImageUrl(),
                                         f.getFollowing().getDescription(),
-                                        f.getFollowing().getTheme(),
+                                        f.getFollowing().getTheme() == null ? "light" : user.getTheme(),
+                                        f.getFollowing().getCreatedAt(),
                                         null, null // No necesitamos los seguidos de los seguidos para evitar ciclos infinitos
                                 ))
                                 .collect(Collectors.toList())
@@ -159,7 +117,8 @@ public class UserController {
                         user.getEmail(),
                         user.getImageUrl(),
                         user.getDescription(),
-                        user.getTheme(),
+                        user.getTheme() == null ? "light" : user.getTheme(),
+                        user.getCreatedAt(),
                         // Convertir los seguidores a UserDTO completos
                         user.getFollowers().stream()
                                 .map(f -> new UserDTO(
@@ -168,7 +127,8 @@ public class UserController {
                                         f.getFollower().getEmail(),
                                         f.getFollower().getImageUrl(),
                                         f.getFollower().getDescription(),
-                                        f.getFollower().getTheme(),
+                                        f.getFollower().getTheme() == null ? "light" : user.getTheme(),
+                                        f.getFollower().getCreatedAt(),
                                         null, null // Evitar ciclos infinitos
                                 ))
                                 .collect(Collectors.toList()),
@@ -180,7 +140,8 @@ public class UserController {
                                         f.getFollowing().getEmail(),
                                         f.getFollowing().getImageUrl(),
                                         f.getFollowing().getDescription(),
-                                        f.getFollowing().getTheme(),
+                                        f.getFollowing().getTheme() == null ? "light" : user.getTheme(),
+                                        f.getFollowing().getCreatedAt(),
                                         null, null // Evitar ciclos infinitos
                                 ))
                                 .collect(Collectors.toList())
@@ -273,5 +234,41 @@ public class UserController {
         return ResponseEntity.ok("Imagen de perfil eliminada");
     }
    
+
+
+    // Obtener el tema de un usuario por su ID (sin autenticación)
+    @GetMapping("/{id}/theme")
+    public ResponseEntity<Map<String, String>> getUserTheme(@PathVariable Integer id) {
+        Optional<User> userOptional = userRepository.findById(id);
+        
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Usuario no encontrado"));
+        }
+
+        String theme = userOptional.get().getTheme();
+        if (theme == null || theme.isEmpty()) {
+            theme = "light"; // Valor por defecto
+        }
+
+        return ResponseEntity.ok(Map.of("theme", theme));
+    }
+
+    // Actualizar el tema del usuario por su ID (sin autenticación)
+    @PutMapping("/{id}/theme")
+    public ResponseEntity<Map<String, String>> updateUserTheme(@PathVariable Integer id, @RequestBody UserDTO userDto) {
+        Optional<User> userOptional = userRepository.findById(id);
+
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Usuario no encontrado"));
+        }
+
+        User user = userOptional.get();
+        user.setTheme(userDto.getTheme());
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Tema actualizado correctamente"));
+    }
+
+
 
 }

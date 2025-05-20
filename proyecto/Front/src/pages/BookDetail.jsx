@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
+import { ThemeContext } from "../context/ThemeContext";
+
 
 const BookDetail = () => {
   const { olid } = useParams();
@@ -9,6 +13,8 @@ const BookDetail = () => {
   const [userId, setUserId] = useState(null);
   const [alert, setAlert] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -97,6 +103,8 @@ const BookDetail = () => {
     );
   }
 
+  const handleBack = () => navigate("/");
+
   return (
     <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Alertas */}
@@ -108,6 +116,7 @@ const BookDetail = () => {
               : "bg-red-100 text-red-800 border border-red-200"
           }`}
         >
+
           <div className="flex items-center">
             {alert.type === "success" ? (
               <svg
@@ -146,6 +155,13 @@ const BookDetail = () => {
       )}
 
       <div className="container mx-auto px-4 py-12">
+        <button
+            onClick={handleBack}
+            className={`flex items-center mb-5 space-x-2 ${theme === "light" ? "text-gray-700" : "text-gray-300"} hover:text-blue-500 transition-colors`}
+            >
+            <FaArrowLeft className="text-lg" />
+            <span className="hidden sm:inline">Volver</span>
+          </button>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
           <div className="flex flex-col lg:flex-row">
             {/* Portada del libro */}

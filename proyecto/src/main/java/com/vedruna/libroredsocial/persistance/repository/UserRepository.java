@@ -20,6 +20,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByUsernameStartingWithIgnoreCase(String prefix);
     // Método para encontrar un usuario por id
     User getUserById(Integer userId);
+    Optional<User> findByUsername(String username);
 
     
 }
