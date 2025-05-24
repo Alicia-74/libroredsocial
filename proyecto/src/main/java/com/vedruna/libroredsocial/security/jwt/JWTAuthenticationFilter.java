@@ -37,7 +37,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         
         // Excluir rutas públicas del filtro
         String uri = request.getRequestURI();
-        if (uri.contains("/api/v1/auth/") || uri.contains("/api/users/all") || uri.startsWith("/api/users/search/") || uri.contains("/api/books/fav") || uri.contains("/api/books/read")  || uri.contains("/api/books/{userId}/read-books") || uri.contains("/api/books/{userId}/favorite-books") || uri.contains("/api/books/external/book/") || uri.contains("/api/follow/") || uri.contains("/api/follow/{id}/is-following") || uri.contains("/api/follow/{id}/following") || uri.contains("/api/follow/{id}/followers")) {
+        if (uri.contains("/api/v1/auth/") || uri.contains("/api/users/all") || uri.startsWith("/api/users/search/") || uri.contains("/api/books/fav") || uri.contains("/api/books/read")  || uri.contains("/api/books/{userId}/read-books") || uri.contains("/api/books/{userId}/favorite-books") || uri.contains("/api/users/{userId}/theme") || uri.contains("/api/books/external/book/") || uri.contains("/api/follow/") || uri.contains("/api/follow/{id}/is-following") || uri.contains("/api/follow/{id}/following") || uri.contains("/api/follow/{id}/followers") || uri.startsWith("/api/messages/conversation/{user1Id}/{user2Id}") || uri.startsWith("/ws") || uri.startsWith("/topic") || uri.startsWith("/queue") || uri.startsWith("/app")) {
             filterChain.doFilter(request, response);
             return;
         }

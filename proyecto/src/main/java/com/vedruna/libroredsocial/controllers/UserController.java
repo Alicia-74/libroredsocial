@@ -237,38 +237,38 @@ public class UserController {
 
 
     // Obtener el tema de un usuario por su ID (sin autenticación)
-    @GetMapping("/{id}/theme")
-    public ResponseEntity<Map<String, String>> getUserTheme(@PathVariable Integer id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Usuario no encontrado"));
+     @GetMapping("/{id}/theme")
+    public ResponseEntity<String> getUserTheme(@PathVariable Integer id) {
+        try {
+            // Llama a un método en tu servicio para obtener el tema
+            String theme = userService.getUserTheme(id);
+            // Aseguramos que siempre devuelve "light" si no se encontró o es nulo
+            return ResponseEntity.ok(theme != null ? theme : "light");
+        } catch (RuntimeException e) {
+            // En caso de que el usuario no exista, o algún otro error,
+            // podríamos devolver "light" como tema por defecto o un error.
+            // Aquí devolvemos "light" para una experiencia de usuario más suave.
+            return ResponseEntity.ok("light");
         }
-
-        String theme = userOptional.get().getTheme();
-        if (theme == null || theme.isEmpty()) {
-            theme = "light"; // Valor por defecto
-        }
-
-        return ResponseEntity.ok(Map.of("theme", theme));
     }
 
-    // Actualizar el tema del usuario por su ID (sin autenticación)
-    @PutMapping("/{id}/theme")
-    public ResponseEntity<Map<String, String>> updateUserTheme(@PathVariable Integer id, @RequestBody UserDTO userDto) {
-        Optional<User> userOptional = userRepository.findById(id);
+    //Actualizar theme
+     @PutMapping("/{id}/theme")
+    public ResponseEntity<?> updateTheme(@PathVariable Integer id, @RequestBody Map<String, String> payload) {
+        String theme = payload.get("theme"); // Obtiene el String "light" o "dark"
 
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Usuario no encontrado"));
+        if (theme == null || (!theme.equals("light") && !theme.equals("dark"))) {
+            return ResponseEntity.badRequest().body("El valor del tema es inválido. Debe ser 'light' o 'dark'.");
         }
 
-        User user = userOptional.get();
-        user.setTheme(userDto.getTheme());
-        userRepository.save(user);
-
-        return ResponseEntity.ok(Map.of("message", "Tema actualizado correctamente"));
+        try {
+            // Llama a un método en tu servicio para actualizar el tema
+            userService.updateUserTheme(id, theme);
+            return ResponseEntity.ok().build(); // O ResponseEntity.noContent().build()
+        } catch (RuntimeException e) {
+            // Manejo de errores si el usuario no existe o hay un problema en la DB
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar el tema: " + e.getMessage());
+        }
     }
-
-
 
 }

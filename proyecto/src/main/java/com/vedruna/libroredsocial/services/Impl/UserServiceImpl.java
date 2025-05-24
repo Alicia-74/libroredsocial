@@ -4,6 +4,9 @@ import com.vedruna.libroredsocial.dto.UserDTO;
 import com.vedruna.libroredsocial.persistance.model.User;
 import com.vedruna.libroredsocial.persistance.repository.UserRepository;
 import com.vedruna.libroredsocial.services.UserServiceI;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -182,17 +185,30 @@ public class UserServiceImpl implements UserServiceI {
     }
 
     @Override
-    public String getUserTheme(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        return user.getTheme() != null ? user.getTheme() : "light";
+    @Transactional
+    public void updateUserTheme(Integer userId, String theme) {
+        System.out.println("DEBUG - UserService: Intentando actualizar tema para userId: " + userId + " a tema: " + theme);
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            System.out.println("DEBUG - UserService: Usuario encontrado: " + user.getUsername() + ", Tema actual en BD: " + user.getTheme());
+            user.setTheme(theme); // Guarda el String "light" o "dark"
+            System.out.println("DEBUG - UserService: Tema establecido en objeto User (en memoria): " + user.getTheme());
+            userRepository.save(user);
+            System.out.println("DEBUG - UserService: Llamada a userRepository.save() completada.");
+        } else {
+            throw new RuntimeException("Usuario no encontrado con ID: " + userId);
+        }
     }
 
     @Override
-    public void updateUserTheme(String username, String theme) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        user.setTheme(theme);
-        userRepository.save(user);
+    public String getUserTheme(Integer userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            // Asegura que si el tema es null en BD, devuelva "light"
+            return userOptional.get().getTheme();
+        }
+        // Si el usuario no existe, devuelve "light" por defecto
+        return "light";
     }
 }

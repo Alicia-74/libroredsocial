@@ -18,6 +18,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.vedruna.libroredsocial.security.jwt.JWTAuthenticationFilter;
 
+// ¡Asegúrate de tener este import estático!
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -25,10 +28,8 @@ public class SecurityConfig {
     @Autowired
     private JWTAuthenticationFilter jwtAuthenticationFilter;
 
-
     @Autowired
     private AuthenticationProvider authProvider;
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -44,28 +45,43 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-    
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authReq -> authReq
+                    // 1. PERMITIR WEBSOCKETS AL PRINCIPIO (¡prioridad!)
+                    
+                   // Permite conexiones WebSocket sin autenticación
+                    .requestMatchers(antMatcher("/ws/**")).permitAll()
+                    .requestMatchers(antMatcher("/ws/info/**")).permitAll()
+                    .requestMatchers(antMatcher("/topic/**")).permitAll()
+                    .requestMatchers(antMatcher("/queue/**")).permitAll()
+                    .requestMatchers(antMatcher("/app/**")).permitAll()
+
+                    // 2. PERMITIR OPTIONS para CORS (generalmente una buena práctica)
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                    // 3. Demás rutas públicas (mantener el orden si es posible de más específico a menos)
                     .requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers("/api/books/fav/**").permitAll()
                     .requestMatchers("/api/books/read/**").permitAll()
                     .requestMatchers("/api/users/all").permitAll()
                     .requestMatchers("/api/users/search/**").permitAll()
-                    .requestMatchers("/api/users/me").authenticated()
+                    // .requestMatchers("/api/users/me").authenticated() // Esta es una ruta autenticada, déjala así o muévela después de anyRequest().authenticated()
                     .requestMatchers("/api/follow/**").permitAll()
                     .requestMatchers("/api/follow/{id}/followers").permitAll()
                     .requestMatchers("/api/follow/{id}/following").permitAll()
                     .requestMatchers("/api/follow/{id}/is-following").permitAll()
-                    .requestMatchers("/api/users/**").permitAll() 
+                    .requestMatchers("/api/users/**").permitAll() // Esta es muy amplia, asegúrate de que no pise nada que deba estar protegido
                     .requestMatchers("/api/books/external/book/**").permitAll()
                     .requestMatchers("/api/books/{userId}/read-books").permitAll()
                     .requestMatchers("/api/books/{userId}/favorite-books").permitAll()
+                    .requestMatchers("/api/users/{userId}/theme").permitAll()
+                    .requestMatchers("/api/messages/**").permitAll() // Esta ruta es también bastante amplia
+                    .requestMatchers("/api/messages/conversation/{user1Id}/{user2Id}").permitAll()
+                    // 4. Cualquier otra solicitud debe estar autenticada
                     .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -74,4 +90,3 @@ public class SecurityConfig {
                 .build();
     }
 }
-

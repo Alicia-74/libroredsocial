@@ -31,7 +31,7 @@ public class User implements Serializable {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "image_url", length = 255)
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -55,6 +55,15 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "following")
     private List<Follow> following;
+
+
+     public String getTheme() {
+        return theme == null ? "light" : theme; // Valor por defecto
+    }
+    
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
 
     
 }

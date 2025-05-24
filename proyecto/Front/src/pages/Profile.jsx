@@ -1,11 +1,12 @@
 import React, { useContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUserCircle, FaArrowLeft, FaCamera, FaTrash, FaSearch } from "react-icons/fa";
+import { FaUserCircle, FaArrowLeft, FaCamera, FaTrash, FaSearch, FaPaperPlane } from "react-icons/fa"; // Importa FaPaperPlane para el botón de enviar mensaje
 import { FiSun, FiMoon, FiLogOut } from "react-icons/fi";
 import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import UserFollowList from "../components/UserFollowList"; // Importa el componente UserFollowList
+import ChatComponent from "../components/ChatComponent"; // Importa el nuevo ChatComponent
 
 /**
  * Componente principal de perfil de usuario
@@ -47,6 +48,7 @@ const Profile = () => {
    */
   useEffect(() => {
     const token = sessionStorage.getItem("token");
+    console.log("Token de sessionStorage:", token);
     if (!token) {
       // Si no hay token, redirige al login
       navigate("/login");
@@ -56,6 +58,8 @@ const Profile = () => {
     // Decodificar el token para obtener el ID del usuario actual
     const decoded = jwtDecode(token);
     setCurrentUserId(decoded.sub); // Establece el ID del usuario logueado
+     console.log("Token decodificado:", decoded); // Paso 2
+      console.log("ID de usuario (decoded.sub):", decoded.sub); // Paso 3
 
     /**
      * Función asíncrona para obtener los datos del usuario desde la API
@@ -240,7 +244,7 @@ const Profile = () => {
         <UserFollowList
           userId={followListConfig.userId} // Pasa el ID del usuario cuyas listas se van a buscar
           type={followListConfig.type}     // Pasa el tipo de lista ('followers' o 'following')
-          title={followListConfig.title}   // Pasa el título para el modal
+          title={followListConfig.title}    // Pasa el título para el modal
           currentUserId={currentUserId}    // Pasa el ID del usuario actual para saber a quién está siguiendo
           onClose={() => setFollowListConfig(prev => ({ ...prev, show: false }))} // Función para cerrar el modal
           theme={theme}                    // Pasa el tema actual para consistencia de estilo
@@ -272,7 +276,9 @@ const Profile = () => {
           <div className="flex items-center space-x-4">
             {/* Botón para alternar el tema (claro/oscuro) */}
             <button
-              onClick={toggleTheme}
+              onClick={() => {
+                toggleTheme(); // Esto ahora actualizará automáticamente la base de datos
+              }}
               className={`p-2 rounded-full ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-gray-700 hover:bg-gray-600"} transition-colors`}
               aria-label="Cambiar tema"
             >
@@ -284,6 +290,10 @@ const Profile = () => {
                 sessionStorage.removeItem("token"); // Elimina el token de sesión
                 logout(); // Llama a la función de logout del contexto de autenticación
                 navigate("/login"); // Redirige a la página de login
+                
+                // Fuerza una recarga completa de la página para que el ThemeProvider
+                // se reinicie y aplique el tema por defecto al no encontrar el token.
+                window.location.reload();
               }}
               className={`p-2 rounded-full ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-gray-700 hover:bg-gray-600"} transition-colors`}
               aria-label="Cerrar sesión"
@@ -460,7 +470,7 @@ const Profile = () => {
                 // Modo de visualización de la descripción
                 <div>
                   <p className={`mb-2 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
-                    {user.description || "Este usuario no ha añadido una descripción todavía."}
+                    {user.description || ""}
                   </p>
                   <button
                     onClick={() => setIsEditingDescription(true)} // Entra en modo de edición
@@ -514,7 +524,7 @@ const Profile = () => {
             {/* Pestañas de contenido (Mensajes, Libros Favoritos, Libros Leídos) */}
             <div className="mb-6">
               <div className="flex border-b border-gray-200 dark:border-gray-600">
-                {["mensajes", "favoritos", "leidos"].map((tab) => (
+                {["favoritos", "leidos"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -537,33 +547,6 @@ const Profile = () => {
 
               {/* Contenido de las pestañas */}
               <div className="mt-4 min-h-[200px]">
-                {/* Contenido de la pestaña "Mensajes" (ejemplo de sección vacía) */}
-                {activeTab === "mensajes" && (
-                  <div className="text-center py-10">
-                    <div className={`inline-block p-4 rounded-full ${theme === "light" ? "bg-gray-100" : "bg-gray-700"}`}>
-                      <svg
-                        className="w-12 h-12 mx-auto text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1}
-                          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                        />
-                      </svg>
-                    </div>
-                    <h3 className="mt-4 text-lg font-medium dark:text-gray-100">
-                      Tus mensajes aparecerán aquí
-                    </h3>
-                    <p className={`mt-1 ${theme === "light" ? "text-gray-500" : "text-gray-200"}`}>
-                      Cuando envíes o recibas mensajes, los verás en esta sección.
-                    </p>
-                  </div>
-                )}
 
                 {/* Contenido de las pestañas "Favoritos" o "Leídos" */}
                 {(activeTab === "favoritos" || activeTab === "leidos") && (

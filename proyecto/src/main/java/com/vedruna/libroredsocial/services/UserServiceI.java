@@ -26,9 +26,9 @@ public interface UserServiceI {
 
     void deleteProfilePicture(Integer userId);
 
-    String getUserTheme(String username);
+    void updateUserTheme(Integer userId, String theme);
     
-    void updateUserTheme(String username, String theme);
+    String getUserTheme(Integer userId);
 
     UserDTO getUserDtoById(Integer id);
 }

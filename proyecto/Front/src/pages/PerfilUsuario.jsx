@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaUserCircle, FaArrowLeft, FaRegComment, FaBook, FaHeart, FaCheck } from "react-icons/fa";
+import { FaUserCircle, FaArrowLeft, FaRegComment, FaBook, FaHeart, FaCheck, FaChevronLeft, FaChevronRight } from "react-icons/fa"; // Importa los iconos de paginación
 import { FiUserPlus, FiUserMinus } from "react-icons/fi";
 import { ThemeContext } from "../context/ThemeContext";
 import { jwtDecode } from "jwt-decode";
@@ -17,13 +17,20 @@ const PerfilUsuario = () => {
   const [isFollowing, setIsFollowing] = useState(false); // Si el usuario actual sigue a este usuario
   const [isLoading, setIsLoading] = useState(true); // Estado de carga general
   const [activeTab, setActiveTab] = useState("favoritos"); // Pestaña activa (favoritos/leídos)
-  
+
   // Estados para los libros
   const [favoriteBooks, setFavoriteBooks] = useState([]); // Libros favoritos del usuario
   const [readBooks, setReadBooks] = useState([]); // Libros leídos del usuario
   const [booksLoading, setBooksLoading] = useState(true); // Estado de carga de libros
   const [booksError, setBooksError] = useState(null); // Error al cargar libros
-  
+
+  // --- INICIO CÓDIGO AÑADIDO PARA PAGINACIÓN ---
+  // Estados para la paginación de libros
+  const [currentPageFav, setCurrentPageFav] = useState(1); // Página actual para la lista de libros favoritos
+  const [currentPageRead, setCurrentPageRead] = useState(1); // Página actual para la lista de libros leídos
+  const itemsPerPage = 4; // Número de libros a mostrar por página
+  // --- FIN CÓDIGO AÑADIDO PARA PAGINACIÓN ---
+
   // Estados para el seguimiento de usuarios
   const [isFollowLoading, setIsFollowLoading] = useState(false); // Estado de carga para botones de seguir/dejar de seguir
   const [followError, setFollowError] = useState(null); // Error en operaciones de seguimiento
@@ -99,7 +106,7 @@ const PerfilUsuario = () => {
     setBooksError(null);
     try {
       const token = sessionStorage.getItem("token");
-      
+
       // Cargar libros favoritos
       const favResponse = await fetch(`http://localhost:8080/api/books/fav/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -107,7 +114,7 @@ const PerfilUsuario = () => {
       if (!favResponse.ok) throw new Error("Error al cargar favoritos");
       const favData = await favResponse.json();
       setFavoriteBooks(favData);
-      
+
       // Cargar libros leídos
       const readResponse = await fetch(`http://localhost:8080/api/books/read/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -199,7 +206,44 @@ const PerfilUsuario = () => {
 
   // Navegación
   const handleBack = () => navigate(-1); // Volver a la página anterior
-  const handleChat = () => navigate(`/chat/${id}`); // Ir al chat con este usuario
+  const handleChat = () => navigate('/messages', {
+    state: {
+      autoOpenChat: true,   // Bandera para abrir automáticamente
+      targetUser: { // Datos completos del usuario
+        id: id,
+        username: user.username,
+        imageUrl: user.imageUrl
+      }
+    }
+  }); // Ir al chat con este usuario
+
+  // --- INICIO CÓDIGO AÑADIDO PARA LÓGICA DE PAGINACIÓN ---
+  // Determina qué lista de libros y estados de página se deben usar según la pestaña activa
+  const currentBooks = activeTab === "favoritos" ? favoriteBooks : readBooks;
+  const currentPage = activeTab === "favoritos" ? currentPageFav : currentPageRead;
+  const setCurrentPage = activeTab === "favoritos" ? setCurrentPageFav : setCurrentPageRead;
+
+  // Calcula el número total de páginas para la lista actual
+  const totalPages = Math.ceil(currentBooks.length / itemsPerPage);
+  // Calcula el índice de inicio y fin para "cortar" la lista de libros y mostrar solo los de la página actual
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayedBooks = currentBooks.slice(startIndex, endIndex); // Los libros que se mostrarán en la página actual
+
+  // Función para avanzar a la siguiente página
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Función para retroceder a la página anterior
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  // --- FIN CÓDIGO AÑADIDO PARA LÓGICA DE PAGINACIÓN ---
 
   /**
    * Componente para mostrar un libro en la lista
@@ -207,8 +251,8 @@ const PerfilUsuario = () => {
    * @param {string} type - Tipo de libro ('favorite' o 'read')
    */
   const BookItem = ({ book, type }) => (
-    <div 
-      className={`flex items-start p-3 rounded-lg ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-gray-700 hover:bg-gray-600"} transition-colors cursor-pointer`}
+    <div
+      className={`flex max-h-[250px] sm:max-h-[300px] md:max-h-[500px] items-start p-3 rounded-lg ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-gray-700 hover:bg-gray-600"} transition-colors cursor-pointer`}
       onClick={() => navigate(`/book/${book.olid}`)}
     >
       {/* Imagen del libro con fallback si no carga */}
@@ -285,13 +329,13 @@ const PerfilUsuario = () => {
             <FaArrowLeft className="text-lg" />
             <span className="hidden sm:inline">Volver</span>
           </button>
-          
+
           <h1 className="text-2xl font-bold text-center">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Perfil de Usuario
             </span>
           </h1>
-          
+
           <div className="w-10"></div> {/* Espaciador para alinear el título */}
         </header>
 
@@ -411,27 +455,33 @@ const PerfilUsuario = () => {
         </div>
 
         {/* Sección de libros (favoritos/leídos) */}
-        <div className={`mt-6 rounded-xl shadow-lg overflow-hidden ${theme === "light" ? "bg-white" : "bg-gray-800"} transition-colors duration-300`}>
+        <div className={`mt-6 mb-[80px] rounded-xl shadow-lg overflow-hidden ${theme === "light" ? "bg-white" : "bg-gray-800"} transition-colors duration-300`}>
           {/* Pestañas para alternar entre favoritos y leídos */}
           <div className="flex border-b border-gray-200 dark:border-gray-600">
             <button
-              onClick={() => setActiveTab("favoritos")}
-              className={`flex-1 py-3 font-medium text-sm flex items-center justify-center space-x-2 ${activeTab === "favoritos" 
-                ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400" 
-                : theme === "light" 
-                ? "text-gray-500 hover:text-gray-700" 
-                : "text-gray-400 hover:text-gray-300"} transition-colors`}
+              onClick={() => {
+                setActiveTab("favoritos");
+                setCurrentPageFav(1); // Reinicia la página de favoritos al cambiar a esta pestaña
+              }}
+              className={`flex-1 py-3 font-medium text-sm flex items-center justify-center space-x-2 ${activeTab === "favoritos"
+                ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400"
+                : theme === "light"
+                  ? "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-300"} transition-colors`}
             >
               <FaHeart />
               <span>Favoritos ({favoriteBooks.length})</span>
             </button>
             <button
-              onClick={() => setActiveTab("leidos")}
-              className={`flex-1 py-3 font-medium text-sm flex items-center justify-center space-x-2 ${activeTab === "leidos" 
-                ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400" 
-                : theme === "light" 
-                ? "text-gray-500 hover:text-gray-700" 
-                : "text-gray-400 hover:text-gray-300"} transition-colors`}
+              onClick={() => {
+                setActiveTab("leidos");
+                setCurrentPageRead(1); // Reinicia la página de leídos al cambiar a esta pestaña
+              }}
+              className={`flex-1 py-3 font-medium text-sm flex items-center justify-center space-x-2 ${activeTab === "leidos"
+                ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400"
+                : theme === "light"
+                  ? "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-300"} transition-colors`}
             >
               <FaCheck />
               <span>Leídos ({readBooks.length})</span>
@@ -450,48 +500,75 @@ const PerfilUsuario = () => {
               <div className="text-center py-10 text-red-500">
                 Error al cargar libros: {booksError}
               </div>
-            ) : activeTab === "favoritos" ? (
-              // Mostrar libros favoritos
-              favoriteBooks.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {favoriteBooks.map((book) => (
-                    <BookItem key={book.olid} book={book} type="favorite" />
-                  ))}
-                </div>
-              ) : (
-                // Estado vacío para favoritos
-                <div className="text-center py-10">
-                  <div className={`inline-block p-4 rounded-full ${theme === "light" ? "bg-gray-100" : "bg-gray-700"}`}>
-                    <FaHeart className="w-12 h-12 mx-auto text-gray-400" />
-                  </div>
-                  <h3 className="mt-4 text-lg font-medium dark:text-gray-100">
-                    No hay libros favoritos
-                  </h3>
-                  <p className={`mt-1 ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
-                    {user.username} no ha marcado libros como favoritos todavía.
-                  </p>
-                </div>
-              )
-            ) : // Mostrar libros leídos
-            readBooks.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {readBooks.map((book) => (
-                  <BookItem key={book.olid} book={book} type="read" />
-                ))}
-              </div>
             ) : (
-              // Estado vacío para leídos
-              <div className="text-center py-10">
-                <div className={`inline-block p-4 rounded-full ${theme === "light" ? "bg-gray-100" : "bg-gray-700"}`}>
-                  <FaBook className="w-12 h-12 mx-auto text-gray-400" />
-                </div>
-                <h3 className="mt-4 text-lg font-medium dark:text-gray-100">
-                  No hay libros leídos
-                </h3>
-                <p className={`mt-1 ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
-                  {user.username} no ha marcado libros como leídos todavía.
-                </p>
-              </div>
+              <>
+                {displayedBooks.length > 0 ? (
+                  // --- INICIO CÓDIGO AÑADIDO PARA ALTURA Y SCROLL DE LIBROS ---
+                  // Contenedor de libros con altura limitada y scroll en pantallas pequeñas.
+                  // `max-h-[300px]` limita la altura a 300px en pantallas pequeñas.
+                  // `md:max-h-[500px]` aumenta la altura máxima a 500px en pantallas medianas y superiores.
+                  // `overflow-y-auto` permite el scroll vertical si el contenido excede la altura máxima.
+                  // `pr-2` añade un pequeño padding a la derecha para que la barra de scroll no se superponga al contenido.
+                  <div className="max-h-[300px] md:max-h-[500px] overflow-y-auto pr-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Ahora mapea los libros que están en la página actual */}
+                      {displayedBooks.map((book) => (
+                        <BookItem
+                          key={book.olid}
+                          book={book}
+                          type={activeTab === "favoritos" ? "favorite" : "read"}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  // --- FIN CÓDIGO AÑADIDO PARA ALTURA Y SCROLL DE LIBROS ---
+                ) : (
+                  // Estado vacío para libros
+                  <div className="text-center py-10">
+                    <div className={`inline-block p-4 rounded-full ${theme === "light" ? "bg-gray-100" : "bg-gray-700"}`}>
+                      {activeTab === "favoritos" ? (
+                        <FaHeart className="w-12 h-12 mx-auto text-gray-400" />
+                      ) : (
+                        <FaBook className="w-12 h-12 mx-auto text-gray-400" />
+                      )}
+                    </div>
+                    <h3 className="mt-4 text-lg font-medium dark:text-gray-100">
+                      No hay libros {activeTab === "favoritos" ? "favoritos" : "leídos"}
+                    </h3>
+                    <p className={`mt-1 ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+                      {user.username} no ha marcado libros como {activeTab === "favoritos" ? "favoritos" : "leídos"} todavía.
+                    </p>
+                  </div>
+                )}
+
+                {/* --- INICIO CÓDIGO AÑADIDO PARA CONTROLES DE PAGINACIÓN --- */}
+                {/* Muestra los controles de paginación solo si hay más de una página */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center mt-6 space-x-4">
+                    {/* Botón para la página anterior, deshabilitado si estamos en la primera página */}
+                    <button
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 1}
+                      className={`p-2 rounded-full ${theme === "light" ? "bg-blue-500 text-white" : "bg-blue-600 text-white"} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    {/* Indicador de la página actual y el total de páginas */}
+                    <span className={`${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    {/* Botón para la página siguiente, deshabilitado si estamos en la última página */}
+                    <button
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`p-2 rounded-full ${theme === "light" ? "bg-blue-500 text-white" : "bg-blue-600 text-white"} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </div>
+                )}
+                {/* --- FIN CÓDIGO AÑADIDO PARA CONTROLES DE PAGINACIÓN --- */}
+              </>
             )}
           </div>
         </div>

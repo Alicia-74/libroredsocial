@@ -1,7 +1,6 @@
 package com.vedruna.libroredsocial.services;
 
 import com.vedruna.libroredsocial.persistance.model.Book;
-import com.vedruna.libroredsocial.persistance.model.User;
 import com.vedruna.libroredsocial.persistance.model.UserBookRead;
 import java.util.List;
 

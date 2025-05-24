@@ -71,22 +71,26 @@ const Register = () => {
   };
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 100px)" }}>
-      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="w-full max-w-xs sm:max-w-md bg-white rounded-xl shadow-lg overflow-hidden" style={{ minHeight: "400px" }}>
+    <div className="flex flex-col" style={{ height: "calc(100vh - 90px)" }}>
+      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-12 pb-20">
+        <div className="w-full max-w-md md:max-w-lg bg-white rounded-xl shadow-lg overflow-hidden" style={{ minHeight: "200px" }}>
           {/* Header con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 text-center">
-            <div className="flex justify-center mb-3">
-              <div className="bg-white/20 p-2 rounded-full">
-                <FaUser className="text-white text-xl" />
+          {/* Header con gradiente más compacto */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 text-center">
+            <div className="flex items-center space-x-3">
+              <div className="bg-white/20 p-1.5 rounded-full ml-14 mr-7 md:p-2 md:ml-[90px] md:mr-7 lg:p-2">
+                <FaUser className="text-white text-lg lg:text-xl" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Crear Cuenta</h2>
+                <p className="text-blue-100 text-xs">Completa tus datos para registrarte</p>
               </div>
             </div>
-            <h2 className="text-xl font-bold text-white">Crear Cuenta</h2>
-            <p className="text-blue-100 text-xs mt-1">Completa tus datos para registrarte</p>
           </div>
+          
 
           {/* Contenido ajustado */}
-          <div className="p-5 space-y-4">
+          <div className="p-3 space-y-4">
             {error && (
               <div className="p-2 bg-red-50 border-l-4 border-red-500 text-red-700 rounded text-xs">
                 {error}
