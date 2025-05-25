@@ -36,19 +36,36 @@ const Busqueda = ({
       try {
         let url = "";
         if (searchTerm) {
-          url = `https://openlibrary.org/search.json?q=${searchTerm}&limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
+          url = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchTerm)}&limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
         } else if (selectedCategory) {
           url = `https://openlibrary.org/subjects/${selectedCategory}.json?limit=${booksPerPage}&offset=${(currentPage - 1) * booksPerPage}`;
         }
 
-        const response = await axios.get(url);
+        const response = await axios.get(url).catch(error => {
+          // Si hay error pero la respuesta contiene datos, la procesamos
+          if (error.response?.data) {
+            return error.response;
+          }
+          throw error;
+        });
+
         const works = response.data.works || response.data.docs || [];
         setBooks(works);
+        
+        // Solo mostramos error si NO hay libros y hay un error real
+        if (works.length === 0 && response.status !== 200) {
+          setError("No se encontraron resultados. Intenta con otro término.");
+        }
+
         const numFound = response.data.numFound || (works.length * 10);
         setTotalPages(Math.ceil(numFound / booksPerPage));
+
       } catch (error) {
         console.error("Error fetching books:", error);
-        setError("Error al cargar los libros. Por favor intenta nuevamente.");
+        // Solo mostramos error si no hay libros
+        if (books.length === 0) {
+          setError("Error al cargar los libros. Por favor intenta nuevamente.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -101,14 +118,18 @@ const Busqueda = ({
         </div>
       )}
       
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-md shadow-md">
+      {/* {error && (
+        <div className={`mb-6 p-4 rounded-md shadow-md ${
+          error.includes("No se encontraron") 
+            ? "bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700"
+            : "bg-red-100 border-l-4 border-red-500 text-red-700"
+        }`}>
           <div className="flex items-center">
             <FiAlertTriangle className="mr-2 text-xl" />
             <p>{error}</p>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Input de búsqueda */}
       <div className="flex justify-center mb-6">
