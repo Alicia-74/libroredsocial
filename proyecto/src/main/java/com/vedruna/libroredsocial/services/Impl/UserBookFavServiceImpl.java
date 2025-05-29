@@ -1,4 +1,4 @@
-package com.vedruna.libroredsocial.services.Impl;
+package com.vedruna.libroredsocial.services.impl;
 
 import java.util.List;
 import java.util.stream.Collectors;

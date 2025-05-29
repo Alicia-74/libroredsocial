@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FaHome, FaComment, FaUser, FaQrcode } from "react-icons/fa";
-import { FiLogIn, FiLogOut, FiUserPlus } from "react-icons/fi";
+import { FiLogIn, FiUserPlus } from "react-icons/fi";
 
 /**
  * Componente Navbar - Barra de navegación superior e inferior

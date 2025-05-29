@@ -1,4 +1,4 @@
-package com.vedruna.libroredsocial.services.Impl;
+package com.vedruna.libroredsocial.services.impl;
 
 import com.vedruna.libroredsocial.persistance.model.Book;
 import com.vedruna.libroredsocial.persistance.model.UserBookRead;

@@ -81,6 +81,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/users/{userId}/theme").permitAll()
                     .requestMatchers("/api/messages/**").permitAll() // Esta ruta es también bastante amplia
                     .requestMatchers("/api/messages/conversation/{user1Id}/{user2Id}").permitAll()
+                    .requestMatchers("/api/messages/chats/{userId}").permitAll()
                     // 4. Cualquier otra solicitud debe estar autenticada
                     .anyRequest().authenticated()
                 )

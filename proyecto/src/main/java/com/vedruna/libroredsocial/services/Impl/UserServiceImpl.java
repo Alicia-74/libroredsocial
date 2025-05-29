@@ -1,4 +1,4 @@
-package com.vedruna.libroredsocial.services.Impl;
+package com.vedruna.libroredsocial.services.impl;
 
 import com.vedruna.libroredsocial.dto.UserDTO;
 import com.vedruna.libroredsocial.persistance.model.User;
@@ -8,7 +8,6 @@ import com.vedruna.libroredsocial.services.UserServiceI;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

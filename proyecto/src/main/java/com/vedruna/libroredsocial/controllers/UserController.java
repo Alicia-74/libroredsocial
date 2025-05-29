@@ -4,7 +4,7 @@ import com.vedruna.libroredsocial.dto.UserDTO;
 import com.vedruna.libroredsocial.persistance.model.User;
 import com.vedruna.libroredsocial.persistance.repository.UserRepository;
 import com.vedruna.libroredsocial.security.auth.services.JWTServiceI;
-import com.vedruna.libroredsocial.services.Impl.UserServiceImpl;
+import com.vedruna.libroredsocial.services.impl.UserServiceImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

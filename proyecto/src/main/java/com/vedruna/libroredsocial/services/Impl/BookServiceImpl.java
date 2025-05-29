@@ -1,4 +1,4 @@
-package com.vedruna.libroredsocial.services.Impl;
+package com.vedruna.libroredsocial.services.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

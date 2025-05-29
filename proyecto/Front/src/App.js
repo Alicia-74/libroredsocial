@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'; // Importa useContext y useEffect
+import React, { useState, useContext } from 'react'; // Importa useContext y useEffect
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext"; // Importa AuthContext
 import { ThemeProvider } from "./context/ThemeContext";
@@ -11,6 +11,7 @@ import "./tailwind.css";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import BookDetail from "./pages/BookDetail";
 import ChatComponent from './components/ChatComponent';
+import QR from './components/QR';
 
 
 function App() {
@@ -43,6 +44,7 @@ function AppContent({ setHideNavbar, hideNavbar }) {
           <Route path="/perfilUsuario/:id" element={<PerfilUsuario />} />
           <Route path="/book/:olid" element={<BookDetail />} />
           <Route path="/messages" element={<ChatComponent currentUserId={loggedInUserId} onChatOpen={() => setHideNavbar(true)} onChatClose={() => setHideNavbar(false)}/>}/>
+          <Route path="/qr" element={<QR/>} />
         </Routes>
       </Router>
     </ThemeProvider>

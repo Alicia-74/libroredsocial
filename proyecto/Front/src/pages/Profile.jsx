@@ -1,12 +1,11 @@
 import React, { useContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUserCircle, FaArrowLeft, FaCamera, FaTrash, FaSearch, FaPaperPlane } from "react-icons/fa"; // Importa FaPaperPlane para el botón de enviar mensaje
+import { FaUserCircle, FaArrowLeft, FaCamera, FaTrash, FaSearch} from "react-icons/fa"; // Importa FaPaperPlane para el botón de enviar mensaje
 import { FiSun, FiMoon, FiLogOut } from "react-icons/fi";
 import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import UserFollowList from "../components/UserFollowList"; // Importa el componente UserFollowList
-import ChatComponent from "../components/ChatComponent"; // Importa el nuevo ChatComponent
 
 /**
  * Componente principal de perfil de usuario
@@ -419,7 +418,7 @@ const Profile = () => {
                   <textarea
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
-                    className={`w-full p-3 rounded-lg border ${theme === "light" ? "border-gray-300" : "border-gray-600 bg-gray-700"} focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    className={`w-full p-3 rounded-lg border ${theme === "light" ? "border-gray-300 text-black" : "border-gray-600 bg-gray-700 text-white"} focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                     placeholder="Cuéntanos algo sobre ti..."
                     rows="3"
                   />
