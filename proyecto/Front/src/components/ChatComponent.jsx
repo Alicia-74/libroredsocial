@@ -70,6 +70,7 @@ const ChatComponent = ({
   // Nuevo estado para indicar si currentUserId ya ha sido cargado/intentado cargar
   const [isCurrentUserIdLoaded, setIsCurrentUserIdLoaded] = useState(false);
 
+
   useEffect(() => {
     const token = sessionStorage.getItem('token');
     if (token) {
@@ -488,13 +489,43 @@ const renderUserList = () => (
   };
 
   // Manejar selección de usuario
-  const handleSelectUser = (user) => {
+  const handleSelectUser = async (user) => {
     if (!user || !user.id) return;
     setSelectedUser(user);
     setShowChatList(false);
     if (typeof onChatOpen === 'function') {
       onChatOpen();
     }
+
+    // Llamada para marcar mensajes como leídos en backend
+    try {
+      await fetch(`/api/messages/mark-as-read?userId=${user.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // agrega autenticación si la tienes
+        }
+      });
+
+      // Actualizar estado local para remover notificaciones
+      setUnreadMessages(prev => {
+        const updated = { ...prev };
+        delete updated[user.id];
+        return updated;
+      });
+
+      // Opcional: también puedes actualizar los mensajes locales para cambiar status a "read"
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          (msg.senderId === user.id && msg.status !== 'read') ? { ...msg, status: 'read' } : msg
+        )
+      );
+    } catch (error) {
+      console.error('Error marcando mensajes como leídos:', error);
+    }
+    
+    setShowChatList(false);
+    setSelectedUser(user);
   };
 
   // Manejar volver a la lista
@@ -647,6 +678,9 @@ const renderUserList = () => (
                       <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} truncate`}>
                         {user.lastMessage || 'Nuevo chat'}
                       </p>
+                      {unreadMessages[user.id] && (
+                        <span className="inline-block w-3 h-3 bg-red-500 rounded-full ml-2" />
+                      )}
                     </div>
                   </li>
                 ))}
