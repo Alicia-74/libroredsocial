@@ -1,28 +1,19 @@
+version: '3.8'
 services:
-  db:
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_DB: libroredsocial_db
-      POSTGRES_USER: libroredsocial_db_user
-      POSTGRES_PASSWORD: 2ZC3Dp1ewchytkITaI3e9l9lcRn6ntW5
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
   backend:
     build: .
     ports:
       - "8080:8080"
     depends_on:
       - db
+    network_mode: bridge  # 🔧 esto permite conexión externa
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/libroredsocial_db
-      SPRING_DATASOURCE_USERNAME: libroredsocial_db_user
-      SPRING_DATASOURCE_PASSWORD: 2ZC3Dp1ewchytkITaI3e9l9lcRn6ntW5
+      SPRING_DATASOURCE_URL: jdbc:mysql://gondola.proxy.rlwy.net:44004/railway
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: zXTDxgHwEPSdorJxPrOjxeXyQIqvhzCD
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_SHOW_SQL: 'true'
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
 
   frontend:
     build: ./Front
@@ -30,6 +21,17 @@ services:
       - "3000:80"
     depends_on:
       - backend
+
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: libroredsocial
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
 
 volumes:
   db_data:

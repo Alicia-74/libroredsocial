@@ -467,14 +467,14 @@ const ChatComponent = ({
     }, 3000);
 
     // 3. Polling para notificaciones no leídas (siempre activo)
-    const unreadInterval = setInterval(() => {
-      fetchInitialUnreadCounts();
-    }, 2000);
+    // const unreadInterval = setInterval(() => {
+    //   fetchInitialUnreadCounts();
+    // }, 2000);
 
     return () => {
       messagesInterval && clearInterval(messagesInterval);
       markAsReadInterval && clearInterval(markAsReadInterval);
-      clearInterval(unreadInterval);
+      // clearInterval(unreadInterval);
     };
   }, [
     currentUserId,
