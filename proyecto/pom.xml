@@ -116,6 +116,14 @@
 			<artifactId>stomp-websocket</artifactId>
 			<version>2.3.4</version>
 		</dependency>
+
+		<!-- Base de datos -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.7.3</version> <!-- updated to the latest stable version -->
+		</dependency>
+
 		
 		<!--  Hasta aqui -->
 		<dependency>
