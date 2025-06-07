@@ -2,209 +2,168 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import axios from 'axios';
-import { FaPaperPlane, FaUserCircle, FaArrowLeft, FaSearch, FaCheckDouble } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
-import { jwtDecode } from 'jwt-decode';
-import { useLocation } from 'react-router-dom';
+import { FaPaperPlane, FaUserCircle, FaArrowLeft, FaSearch } from 'react-icons/fa';
+import { useTheme } from '../context/ThemeContext'; // Asumo que tienes un ThemeContext
+import { jwtDecode } from 'jwt-decode'; // Para decodificar el token JWT
+import { useLocation } from 'react-router-dom'; // Para obtener el estado de la ubicación
 
-/**
- * Configuración de temas para el chat
- * Define los colores y estilos para el modo claro y oscuro
- */
+//definición de temas:
 const themes = {
   light: {
     colors: {
       primary: 'bg-white',
-      secondary: 'bg-gray-50',
+      secondary: 'bg-gray-100',
+      border: 'border-gray-200',
       text: 'text-gray-900',
-      input: 'bg-gray-50',
+      input: 'bg-white border border-gray-300',
+      icon: 'text-gray-500',
+      selectedUser: 'bg-blue-50',
       message: {
         own: 'bg-blue-500 text-white',
-        other: 'bg-gray-100 text-gray-800'
+        other: 'bg-gray-200 text-gray-900',
       },
-      emptyState: 'text-gray-500',
-      border: 'border-gray-200',
-      icon: 'text-gray-500'
+      emptyState: 'text-gray-600'
     },
-    selectedUser: 'bg-blue-100'
   },
   dark: {
     colors: {
       primary: 'bg-gray-900',
       secondary: 'bg-gray-800',
+      border: 'border-gray-700',
       text: 'text-gray-100',
-      input: 'bg-gray-700',
+      input: 'bg-gray-700 border border-gray-600',
+      icon: 'text-gray-400',
+      selectedUser: 'bg-gray-700',
       message: {
         own: 'bg-blue-600 text-white',
-        other: 'bg-gray-700 text-gray-100'
+        other: 'bg-gray-700 text-gray-100',
       },
-      emptyState: 'text-gray-400',
-      border: 'border-gray-700',
-      icon: 'text-gray-400'
+      emptyState: 'text-gray-400'
     },
-    selectedUser: 'bg-blue-900'
-  }
+  },
 };
 
-/**
- * Componente principal de chat
- * @param {Object} props - Propiedades del componente
- * @param {string} [props.accentColor='blue'] - Color de acento
- * @param {string} [props.apiBaseUrl='http://localhost:8080/api'] - URL base de la API
- * @param {string} [props.websocketUrl='http://localhost:8080/ws'] - URL del WebSocket
- * @param {Function} [props.onChatOpen] - Callback al abrir chat
- * @param {Function} [props.onChatClose] - Callback al cerrar chat
- */
+// Altura del navbar inferior, ajusta si es necesario (ej: 56px para h-14, 64px para h-16)
+const NAVBAR_HEIGHT = 56; 
+
 const ChatComponent = ({
-  accentColor = 'blue',
-  apiBaseUrl = 'http://localhost:8080/api',
-  websocketUrl = 'http://localhost:8080/ws',
-  onChatOpen,
-  onChatClose
+  accentColor = 'blue', // Color de acento para algunos elementos (puedes usarlo con Tailwind)
+  apiBaseUrl = 'http://localhost:8080/api', // URL base de tu API REST
+  websocketUrl = 'http://localhost:8080/ws', // URL base para la conexión WebSocket
+  onChatOpen, // Callback cuando se abre un chat individual
+  onChatClose // Callback cuando se cierra un chat individual (vuelve a la lista)
 }) => {
-  // Obtener el tema del contexto
-  const { theme } = useTheme();
-  
-  // Obtener el ID del usuario actual desde el token
-  const [currentUserId, setCurrentUserId] = useState(null);
-  // Nuevo estado para indicar si currentUserId ya ha sido cargado/intentado cargar
-  const [isCurrentUserIdLoaded, setIsCurrentUserIdLoaded] = useState(false);
+  const { theme } = useTheme(); // Obtiene el tema actual (light/dark)
+  const [currentUserId, setCurrentUserId] = useState(null); // ID del usuario logueado
+  const [isCurrentUserIdLoaded, setIsCurrentUserIdLoaded] = useState(false); // Bandera para saber si el ID ya se cargó
 
+  // Referencias para el cliente STOMP y para el scroll de mensajes
+  const stompClientRef = useRef(null); // Para la instancia del cliente STOMP WebSocket
+  const messagesEndRef = useRef(null); // Para hacer scroll automático al final de los mensajes
 
+  // Estados principales del componente
+  const [messages, setMessages] = useState([]); // Almacena la lista de mensajes en el chat activo
+  const [newMessage, setNewMessage] = useState(''); // Contenido del nuevo mensaje a enviar
+  const [chatUsers, setChatUsers] = useState([]); // Lista de usuarios con los que el actual puede chatear
+  const [selectedUser, setSelectedUser] = useState(null); // El usuario con el que se está chateando actualmente
+  const [searchTerm, setSearchTerm] = useState(''); // Término de búsqueda para filtrar usuarios en la lista de chats
+  const [showChatList, setShowChatList] = useState(true); // Controla la visibilidad de la lista de chats (responsive)
+  const [connectionStatus, setConnectionStatus] = useState('disconnected'); // Estado de la conexión WebSocket (connected, disconnected, error)
+  const [isLoading, setIsLoading] = useState(false); // Para mostrar un spinner mientras se cargan los usuarios
+  const location = useLocation(); // Hook de React Router para acceder a la URL y su estado
+  const { state } = location; // Por si necesitas pasar algún estado al componente via navegación
+
+  // Estados para notificaciones de mensajes no leídos
+  // unreadMessages: Objeto para indicar si un usuario tiene mensajes no leídos (booleano)
+  const [unreadMessages, setUnreadMessages] = useState({}); 
+  // unreadCounts: Objeto para almacenar el conteo exacto de mensajes no leídos por cada usuario
+  const [unreadCounts, setUnreadCounts] = useState({});     
+
+  // Obtiene la configuración de colores del tema actual
+  const currentTheme = themes[theme];
+  // Clases CSS para el botón de enviar mensaje, cambia según el tema
+  const buttonClasses = `ml-3 w-10 h-10 flex items-center justify-center rounded-full text-white
+                          ${theme === 'light' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'}   
+                          transition-colors disabled:opacity-50`;
+
+  // --- useEffect para obtener el ID del usuario actual desde el token JWT ---
+  // Se ejecuta una vez al montar el componente para obtener el ID del usuario logueado.
+  // Esto es crucial para suscribirse a los topics de WebSocket específicos del usuario.
   useEffect(() => {
     const token = sessionStorage.getItem('token');
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        setCurrentUserId(decoded.sub);
-        console.log('CurrentUserId obtenido del token (jwtDecode):', decoded.sub);
-        console.log('>>> currentUserId ESTABLECIDO a:', decoded.sub);
+        setCurrentUserId(decoded.sub); // 'sub' suele contener el ID del usuario en JWT
+        setIsCurrentUserIdLoaded(true); // Marca que el ID ya está cargado
       } catch (error) {
         console.error('Error al decodificar el token:', error);
       }
     }
-    // Marca que la carga del currentUserId se ha intentado
-    setIsCurrentUserIdLoaded(true);  
-  }, []);
+  }, []); // El array vacío asegura que se ejecuta solo una vez al montar
 
-  // Referencias
-  const stompClientRef = useRef(null);
-  const messagesEndRef = useRef(null);
-  const chatInputContainerRef = useRef(null);
-
-  // Estados
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  // Se cambió `followedUsers` a `chatUsers` para reflejar que contendrá tanto seguidos como seguidores.
-  const [chatUsers, setChatUsers] = useState([]); 
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showChatList, setShowChatList] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  const [isLoading, setIsLoading] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const location = useLocation();
-  const { state } = location;
-
-  // Obtener estilos del tema actual
-  const currentTheme = themes[theme];
-  const buttonClasses = `ml-3 w-10 h-10 flex items-center justify-center rounded-full text-white
-                          ${theme === 'light' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'}  
-                          transition-colors disabled:opacity-50`;
-
-  // Función para desplazarse al final de los mensajes
+  // --- Función para desplazarse al final de los mensajes ---
+  // Usa useCallback para memoizar la función y evitar re-creaciones innecesarias,
+  // lo que es bueno para el rendimiento si se pasa como dependencia a otros hooks.
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, []);
 
-  // Efecto para manejar el teclado en móviles
-  useEffect(() => {
-    const isMobileView = window.matchMedia('(max-width: 767px)').matches;
-    if (!isMobileView || !selectedUser) {
-      setKeyboardHeight(0);
-      return;
-    }
-
-    const adjustForKeyboard = () => {
-      const visualViewportHeight = window.visualViewport?.height || window.innerHeight;
-      const currentKeyboardHeight = window.innerHeight - visualViewportHeight;
-      setKeyboardHeight(currentKeyboardHeight > 0 ? currentKeyboardHeight : 0);
-      scrollToBottom();
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', adjustForKeyboard);
-      adjustForKeyboard();
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', adjustForKeyboard);
-      }
-    };
-  }, [selectedUser, showChatList, scrollToBottom]);
-
-  // Función para obtener usuarios seguidos (following) y seguidores (followers)
+  // --- Función para obtener la lista de usuarios con los que el usuario actual puede chatear ---
+  // Actualmente, obtiene "seguidos" y "seguidores" para crear la lista de chat.
   const fetchChatUsers = useCallback(async () => {
-    if (!isCurrentUserIdLoaded) {
-      console.warn('fetchChatUsers: currentUserId aún no ha sido cargado. No se pueden cargar usuarios de chat.');
-      setChatUsers([]);
-      return;
-    }
-    if (!currentUserId) { 
-      console.warn('fetchChatUsers: currentUserId es null. No se pueden cargar usuarios de chat.');
-      setChatUsers([]);
+    // Si el ID del usuario no está cargado o no existe, no se hace la petición.
+    if (!isCurrentUserIdLoaded || !currentUserId) {
+      setChatUsers([]); // Limpia la lista de usuarios si no hay ID
       return;
     }
 
-    setIsLoading(true);
+    setIsLoading(true); // Activa el estado de carga
     try {
       const token = sessionStorage.getItem('token');
-      if (!token) {
-        console.warn('fetchChatUsers: No hay token JWT');
+      if (!token) { // Si no hay token, no se pueden obtener los usuarios
         setChatUsers([]);
         return;
       }
 
-      console.log(`Workspace: Obteniendo usuarios seguidos para userId: ${currentUserId}`);
-      const followingResponse = await axios.get(`${apiBaseUrl}/follow/${currentUserId}/following`, {
-        headers: {  
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log(`Workspace: Obteniendo seguidores para userId: ${currentUserId}`);
-      const followersResponse = await axios.get(`${apiBaseUrl}/follow/${currentUserId}/followers`, {
-        headers: {  
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Hace dos peticiones HTTP en paralelo para obtener seguidos y seguidores
+      const [followingResponse, followersResponse] = await Promise.all([
+        axios.get(`${apiBaseUrl}/follow/${currentUserId}/following`, {
+          headers: {   
+            'Authorization': `Bearer ${token}`, // Envía el token para autorización
+            'Content-Type': 'application/json'
+          }
+        }),
+        axios.get(`${apiBaseUrl}/follow/${currentUserId}/followers`, {
+          headers: {   
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
 
+      // Combina las listas de seguidos y seguidores
       const combinedUsers = [...(Array.isArray(followingResponse.data) ? followingResponse.data : []),
                              ...(Array.isArray(followersResponse.data) ? followersResponse.data : [])];
       
-      // Eliminar duplicados y filtrar usuarios inválidos
+      // Elimina usuarios duplicados usando un Map para mantener la unicidad por ID
       const uniqueUsers = Array.from(new Map(combinedUsers.filter(user => user && user.id).map(user => [user.id, user])).values());
-
-      console.log("fetchChatUsers: Usuarios de chat recibidos (seguidos + seguidores):", uniqueUsers);
-      setChatUsers(uniqueUsers);
+      setChatUsers(Array.from(uniqueUsers)); // Actualiza el estado con la lista de usuarios únicos
+      fetchInitialUnreadCounts(uniqueUsers);// Llama a la función para obtener conteos iniciales de mensajes no leídos
     } catch (error) {
-      console.error('fetchChatUsers: Error al cargar usuarios de chat:', error.response?.data || error.message);
-      setChatUsers([]);
+      console.error('Error al cargar usuarios de chat:', error);
+      setChatUsers([]); // En caso de error, la lista de usuarios se vacía
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Desactiva el estado de carga
     }
-  }, [currentUserId, isCurrentUserIdLoaded, apiBaseUrl]); 
+  }, [currentUserId, isCurrentUserIdLoaded, apiBaseUrl]); // Dependencias: se re-crea si cambian estos valores
 
-  // Función para obtener historial de mensajes
+  // --- Función para obtener el historial de mensajes entre dos usuarios ---
   const fetchMessagesHistory = useCallback(async (user1Id, user2Id) => {
     try {
       const token = sessionStorage.getItem('token');
-      if (!token) throw new Error('fetchMessagesHistory: No hay token JWT');
+      if (!token) throw new Error('No hay token JWT'); // Si no hay token, lanza un error
 
-      console.log(`WorkspaceMessagesHistory: Cargando mensajes para conversación ${user1Id} y ${user2Id}`);
       const response = await axios.get(
         `${apiBaseUrl}/messages/conversation/${user1Id}/${user2Id}`,
         {
@@ -214,340 +173,439 @@ const ChatComponent = ({
           }
         }
       );
-      setMessages(response.data);
-      console.log('fetchMessagesHistory: Mensajes cargados:', response.data);
-      scrollToBottom();
+      setMessages(response.data); // Actualiza los mensajes con el historial
+      scrollToBottom(); // Desplaza al final para ver los últimos mensajes
     } catch (error) {
-      console.error('fetchMessagesHistory: Error al cargar mensajes:', error.response?.data || error.message);
-      setMessages([]);
+      console.error('Error al cargar mensajes:', error);
+      setMessages([]); // En caso de error, se vacían los mensajes
     }
-  }, [apiBaseUrl, scrollToBottom]);
+  }, [apiBaseUrl, scrollToBottom]); // Dependencias: se re-crea si cambian estos valores
 
-  // Efecto para cargar usuarios de chat cuando cambia currentUserId o se carga
+  // --- Función para marcar mensajes como leídos en el backend y actualizar el estado local ---
+  const markMessagesAsRead = useCallback(async (senderId, receiverId) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      if (!token) return; // Si no hay token, no se puede hacer la petición
+
+      // Petición POST al backend para marcar la conversación como leída
+      await axios.post(`${apiBaseUrl}/messages/mark-as-read`, null, {
+        params: {
+          senderId: senderId,
+          receiverId: receiverId
+        },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Actualizar estado local: marcar los mensajes de ese chat como 'read'
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.senderId === senderId && msg.receiverId === receiverId && msg.status !== 'read' 
+            ? { ...msg, status: 'read' } // Cambia el estado a 'read'
+            : msg
+        )
+      );
+
+      // Eliminar el indicador de unreadMessages para el senderId (visual)
+      setUnreadMessages(prev => {
+        const updated = { ...prev };
+        delete updated[senderId]; // Quita la bandera de no leído para este usuario
+        return updated;
+      });
+
+      // Poner el conteo de no leídos a 0 para el senderId (numérico)
+      setUnreadCounts(prev => ({
+        ...prev,
+        [senderId]: 0 // Restablece el conteo a 0 para el usuario
+      }));
+
+    } catch (error) {
+      console.error('Error marcando mensajes como leídos:', error);
+    }
+  }, [apiBaseUrl]); // Dependencias: se re-crea si cambian estos valores
+
+  // --- Función para obtener los conteos iniciales de mensajes no leídos (HTTP) ---
+  // Se usa para cargar los conteos al inicio, antes de que las actualizaciones por WebSocket lleguen.
+  const fetchInitialUnreadCounts = useCallback(async (users) => {
+    const usersToCheck = users || chatUsers;
+     console.log('DEBUG: fetchInitialUnreadCounts called', { currentUserId, chatUsersLength: chatUsers.length });
+    
+    if (!currentUserId || !usersToCheck.length) return;
+
+    try {
+      const token = sessionStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${apiBaseUrl}/messages/unread-counts-by-sender/${currentUserId}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('DEBUG: unread-counts response', response.data);
+
+
+      if (response.data) {
+        // Convertir keys de string a number (ya que el backend puede devolverlas como strings)
+        const counts = {};
+        Object.keys(response.data).forEach(key => {
+           counts[Number(key)] = response.data[key];
+        });
+
+        setUnreadCounts(counts);
+
+        console.log('Conteos iniciales de mensajes no leídos:', counts);
+        
+        // Actualizar las banderas booleanas
+        const flags = {};
+        Object.keys(counts).forEach(senderId => {
+          flags[senderId] = counts[senderId] > 0;
+        });
+        setUnreadMessages(flags);
+      }
+    } catch (error) {
+      console.error("Error fetching initial unread messages:", error);
+    }
+  }, [currentUserId, apiBaseUrl]);
+
+  // --- useEffect para cargar los usuarios de chat cuando el ID del usuario actual está cargado ---
   useEffect(() => {
     if (isCurrentUserIdLoaded) {
-      fetchChatUsers();
+      fetchChatUsers(); // Llama a la función para cargar usuarios
     }
-  }, [isCurrentUserIdLoaded, fetchChatUsers]); 
+  }, [isCurrentUserIdLoaded, fetchChatUsers]); // Se re-ejecuta si cambian estas dependencias
 
-  // Efecto para manejar conexión WebSocket y carga de mensajes
+  // --- useEffect para configurar la conexión WebSocket y sus suscripciones ---
+  // Este es el corazón de la funcionalidad de tiempo real.
   useEffect(() => {
-    console.log('>>> useEffect de WebSocket ejecutándose. currentUserId actual:', currentUserId, 'isCurrentUserIdLoaded:', isCurrentUserIdLoaded);
-
+    // Si el ID del usuario no está cargado o no existe, no se conecta el WebSocket.
     if (!isCurrentUserIdLoaded || currentUserId === null) {
-      console.warn('useEffect WebSocket: currentUserId aún no ha sido cargado/definido. No se puede conectar o cargar mensajes.');
-      setMessages([]);
-      if (stompClientRef.current?.active) {
-        stompClientRef.current.deactivate();
-        stompClientRef.current = null;
-        setConnectionStatus('disconnected');
-      }
-      return;
-    }
-    
-    if (!selectedUser) {
-      setMessages([]);
-      if (stompClientRef.current?.active) {
-        stompClientRef.current.deactivate();
-        stompClientRef.current = null;
-        setConnectionStatus('disconnected');
-      }
-      return;
+        // También asegura que si el usuario se desloguea, la conexión se desactive.
+        if (stompClientRef.current && stompClientRef.current.connected) {
+            stompClientRef.current.deactivate();
+        }
+        return;
     }
 
-    setConnectionStatus('connecting');
+    // Crea una nueva instancia del cliente STOMP
     const client = new Client({
-      webSocketFactory: () => new SockJS(websocketUrl),
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      debug: (str) => console.log('[WebSocket]', str),
-      onConnect: () => {
-        setConnectionStatus('connected');
-        stompClientRef.current = client;
+        webSocketFactory: () => new SockJS(websocketUrl), // Usa SockJS para compatibilidad de navegadores
+        reconnectDelay: 5000, // Reintenta la conexión cada 5 segundos si se pierde
+        heartbeatIncoming: 4000, // Intervalo para latidos entrantes
+        heartbeatOutgoing: 4000, // Intervalo para latidos salientes
+        debug: (str) => console.log('[ChatComponent WebSocket]', str), // Para ver logs de la conexión
 
-        client.subscribe(`/user/${currentUserId}/queue/messages`, (message) => {
-          const receivedMessage = JSON.parse(message.body);
-          console.log('WebSocket: Mensaje recibido:', receivedMessage);
+        // Callback cuando la conexión WebSocket se establece correctamente
+        onConnect: () => {
+            setConnectionStatus('connected'); // Actualiza el estado de la conexión
+            stompClientRef.current = client; // Guarda la instancia del cliente STOMP
 
-          setMessages(prev => {
-            const filtered = prev.filter(m => !m.isTemp || m.tempId !== receivedMessage.tempId);
-            return [...filtered, receivedMessage];
-          });
-          scrollToBottom();
-        });
+            // --- Suscripción 1: Para recibir mensajes nuevos dirigidos a este usuario ---
+            client.subscribe(`/user/${currentUserId}/queue/messages`, (message) => {
+                const receivedMessage = JSON.parse(message.body); // Parsea el mensaje JSON
 
-        if (currentUserId && selectedUser.id) {
-            console.log('>>> Llamando a fetchMessagesHistory con currentUserId:', currentUserId, 'y selectedUser.id:', selectedUser.id);
-            fetchMessagesHistory(currentUserId, selectedUser.id);
-        } else {
-            console.warn('WebSocket onConnect: Faltan IDs (currentUserId o selectedUser.id) para cargar historial.');
+                console.log('Mensaje de chat recibido:', receivedMessage);
+
+                // Si el mensaje es para el usuario actual (yo soy el receptor)
+                if (receivedMessage.receiverId === currentUserId) {
+                    // Actualizar el conteo de no leídos para el remitente (quien me envió el mensaje)
+                    setUnreadCounts(prev => ({
+                        ...prev,
+                        [receivedMessage.senderId]: (prev[receivedMessage.senderId] || 0) + 1 // Incrementa el conteo
+                    }));
+                    setUnreadMessages(prev => ({
+                        ...prev,
+                        [receivedMessage.senderId]: true // Marca que este remitente tiene mensajes no leídos
+                    }));
+                }
+
+                // Si el mensaje es del chat actualmente seleccionado (el que tengo abierto)
+                if (selectedUser && selectedUser.id === receivedMessage.senderId) {
+                    setMessages(prev => {
+                        // Filtra mensajes temporales (si usas optimismo UI) para evitar duplicados
+                        const filtered = prev.filter(m => !m.isTemp || m.tempId !== receivedMessage.tempId);
+                        return [...filtered, { ...receivedMessage, status: 'read' }]; // Añade el mensaje y asume que se lee
+                    });
+                    // Si estás en el chat con ese usuario, marca los mensajes como leídos en el backend
+                    markMessagesAsRead(receivedMessage.senderId, currentUserId);
+                } else {
+                    // Si no es el chat seleccionado, simplemente agregarlo (para cuando se abra)
+                    setMessages(prev => {
+                        const filtered = prev.filter(m => !m.isTemp || m.tempId !== receivedMessage.tempId);
+                        return [...filtered, receivedMessage];
+                    });
+                }
+                scrollToBottom(); // Desplaza al final para ver el nuevo mensaje
+            });
+
+            // --- Suscripción 2: Para recibir actualizaciones de conteo no leído (desde el backend) ---
+            client.subscribe(`/user/${currentUserId}/queue/unread-count`, (message) => {
+                const data = JSON.parse(message.body);
+                // Si es un objeto con varios conteos (lo normal)
+                if (typeof data === 'object' && !Array.isArray(data)) {
+                    setUnreadCounts(data);
+                    const flags = {};
+                    Object.keys(data).forEach(senderId => {
+                        flags[senderId] = data[senderId] > 0;
+                    });
+                    setUnreadMessages(flags);
+                }
+                // Si es un solo conteo (por compatibilidad)
+                else if (data.senderId && data.unreadCount !== undefined) {
+                    setUnreadCounts(prev => ({
+                        ...prev,
+                        [data.senderId]: data.unreadCount
+                    }));
+                    setUnreadMessages(prev => ({
+                        ...prev,
+                        [data.senderId]: data.unreadCount > 0
+                    }));
+                }
+            });
+
+            // --- ¡NUEVA Suscripción 3! Para recibir notificaciones de estado de tus propios mensajes ---
+            client.subscribe(`/user/${currentUserId}/queue/message-status-update`, (message) => {
+                const data = JSON.parse(message.body);
+                console.log('Actualización de estado de mensaje recibida:', data);
+
+                if (data.type === 'readConfirmation' && data.readerId) {
+                    const readerId = data.readerId; // El ID del usuario que leyó tus mensajes (es decir, el otro usuario en el chat)
+                    const senderOfReadMessages = data.senderOfReadMessages || currentUserId; // El ID de quien envió los mensajes que fueron leídos (debería ser tú)
+
+                    setMessages(prevMessages =>
+                        prevMessages.map(msg => {
+                            // Si el mensaje lo enviaste tú (currentUserId)
+                            // Y el receptor de ese mensaje fue el 'readerId' (el otro usuario que lo leyó)
+                            // Y el estado del mensaje no es 'read' (para evitar actualizaciones redundantes)
+                            if (msg.senderId === Number(senderOfReadMessages) && msg.receiverId === Number(readerId) && msg.status !== 'read') {
+                                console.log(`Marcando mensaje propio como leído: ${msg.content}`);
+                                return { ...msg, status: 'read' };
+                            }
+                            return msg;
+                        })
+                    );
+                }
+            });
+
+            // Cargar historial de mensajes si hay un usuario seleccionado al conectar
+            // (Esto es útil si la página se recarga mientras un chat estaba abierto)
+            if (selectedUser) {
+                fetchMessagesHistory(currentUserId, selectedUser.id);
+            }
+        }, // Cierra el `onConnect` callback aquí.
+        // Callback cuando la conexión WebSocket se desconecta
+        onDisconnect: () => {
+            setConnectionStatus('disconnected');
+            console.log('ChatComponent WebSocket desconectado.');
+        },
+        // Callback para errores STOMP
+        onStompError: (frame) => {
+            console.error('Error STOMP en ChatComponent:', frame);
+            setConnectionStatus('error');
         }
-      },
-      onDisconnect: () => {
-        setConnectionStatus('disconnected');
-      },
-      onStompError: (frame) => {
-        console.error('WebSocket Error STOMP:', frame.headers['message']);
-        setConnectionStatus('error');
-      },
-      onWebSocketError: (error) => {
-        console.error('WebSocket Error:', error);
-        setConnectionStatus('error');
-      }
     });
 
-    client.activate();
+    
+    client.activate(); // Activa la conexión WebSocket
 
+    // Función de limpieza: se ejecuta cuando el componente se desmonta o las dependencias cambian.
+    // Asegura que la conexión WebSocket se cierre correctamente.
     return () => {
-      if (client.connected) {
-        client.deactivate();
-      }
+        if (client.connected) {
+            client.deactivate();
+            console.log('ChatComponent WebSocket desactivado en limpieza.');
+        }
     };
-  }, [currentUserId, isCurrentUserIdLoaded, selectedUser, websocketUrl, apiBaseUrl, fetchMessagesHistory]); 
-
-
+}, [currentUserId, isCurrentUserIdLoaded, selectedUser, websocketUrl, fetchMessagesHistory, scrollToBottom, markMessagesAsRead]); // Dependencias para re-ejecutar el efecto
+  // --- useEffect para manejar la selección de un usuario de chat ---
+  // Se encarga de cargar el historial y marcar mensajes como leídos cuando se selecciona un chat.
+    
+  
   useEffect(() => {
-    if (!currentUserId) return; // No conectar hasta que currentUserId esté definido
-
-    // Crear cliente STOMP con SockJS
-    stompClientRef.current = new Client({
-      webSocketFactory: () => new SockJS(websocketUrl),
-      reconnectDelay: 5000,
-      debug: (str) => {
-        // Puedes quitar el debug en producción
-        console.log('[STOMP]', str);
-      },
-      onConnect: () => {
-        setConnectionStatus('connected');
-        console.log('Conectado a WebSocket');
-
-        // Suscribirse a mensajes nuevos para el usuario actual
-        stompClientRef.current.subscribe(`/user/${currentUserId}/queue/messages`, (msg) => {
-          const message = JSON.parse(msg.body);
-          setMessages((prev) => [...prev, message]);
-          scrollToBottom();
-        });
-
-        // Suscribirse a actualizaciones de estado de mensajes (leído)
-        stompClientRef.current.subscribe(`/user/${currentUserId}/queue/message-status`, (msg) => {
-          const updatedMessage = JSON.parse(msg.body);
-          setMessages((prev) =>
-            prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m))
-          );
-        });
-      },
-      onDisconnect: () => {
-        setConnectionStatus('disconnected');
-        console.log('Desconectado de WebSocket');
-      },
-      onStompError: (frame) => {
-        console.error('Error STOMP:', frame);
-      },
-    });
-
-    // Activar la conexión
-    stompClientRef.current.activate();
-
-    // Cleanup para desconectar al desmontar
-    return () => {
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate();
-      }
-    };
-  }, [currentUserId]);
-
-
-  const markMessageAsRead = (messageId) => {
-    if (stompClientRef.current && stompClientRef.current.connected) {
-      stompClientRef.current.publish({
-        destination: '/app/chat.readMessage',
-        body: JSON.stringify({ id: messageId }),
-      });
+    if (selectedUser && currentUserId) {
+      // Marcar mensajes como leídos cuando se selecciona un usuario (enviará petición al backend)
+      markMessagesAsRead(selectedUser.id, currentUserId);
+      // Cargar historial de mensajes para el chat seleccionado
+      fetchMessagesHistory(currentUserId, selectedUser.id);
     }
-  };
-
-  const [unreadMessages, setUnreadMessages] = useState({}); // ← Nuevo estado
-
-// Recibir mensajes por WebSocket
-useEffect(() => {
-  const socket = new SockJS(websocketUrl);
-  const stompClient = new Client({
-    webSocketFactory: () => socket,
-    onConnect: () => {
-      setConnectionStatus('connected');
-
-      stompClient.subscribe(`/user/${currentUserId}/queue/messages`, (message) => {
-        const receivedMessage = JSON.parse(message.body);
-
-        // Añadir mensaje recibido
-        setMessages(prev => [...prev, receivedMessage]);
-
-        // Marcar como no leído si no es el usuario seleccionado
-        if (!selectedUser || selectedUser.id !== receivedMessage.senderId) {
-          setUnreadMessages(prev => ({
-            ...prev,
-            [receivedMessage.senderId]: true
-          }));
-        }
-      });
-    },
-    onDisconnect: () => setConnectionStatus('disconnected'),
-  });
-
-  stompClient.activate();
-  stompClientRef.current = stompClient;
-
-  return () => {
-    stompClient.deactivate();
-  };
-}, [currentUserId, websocketUrl, selectedUser]);
-
-// Render de la lista de usuarios con notificaciones de "Nuevo"
-const renderUserList = () => (
-  <div>
-    {chatUsers.map(user => ( // Usamos `chatUsers` aquí
-      <div
-        key={user.id}
-        onClick={() => {
-          setSelectedUser(user);
-          setUnreadMessages(prev => {
-            const updated = { ...prev };
-            delete updated[user.id]; // Marcamos como leído al abrir el chat
-            return updated;
-          });
-        }}
-        className={`flex items-center p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 ${selectedUser?.id === user.id ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
-      >
-        <FaUserCircle className="text-2xl mr-2 text-gray-400" />
-        <div className="flex-1">{user.name}</div>
-
-        {/* Punto rojo de notificación */}
-        {unreadMessages[user.id] && (
-          <span className="w-3 h-3 rounded-full bg-red-500 ml-2"></span>
-        )}
-      </div>
-    ))}
-
-  </div>
-);
-
-  useEffect(() => {
-    if (!selectedUser) return;
-
-    // Marcar como leídos todos los mensajes recibidos del usuario seleccionado
-    messages.forEach(msg => {
-      if (msg.receiverId === currentUserId && msg.status !== 'read') {
-        markMessageAsRead(msg.id);
-      }
-    });
-  }, [selectedUser, messages]);
+  }, [selectedUser, currentUserId, markMessagesAsRead, fetchMessagesHistory]); // Dependencias
 
   
-  // Efecto para scroll al final de los mensajes
+  
+  // --- useEffect para hacer scroll al final cada vez que los mensajes cambian ---
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages, scrollToBottom]); // Dependencias
 
-  // Función para enviar mensaje
+  // --- useEffect para cargar los conteos iniciales de no leídos de la lista de chats ---
+  // Se ejecuta cuando el ID del usuario está cargado y la lista de chatUsers se ha poblado.
+  useEffect(() => {
+    if (isCurrentUserIdLoaded && chatUsers.length > 0) {
+      console.log('DEBUG: useEffect for fetchInitialUnreadCounts', { isCurrentUserIdLoaded, chatUsersLength: chatUsers.length });
+      fetchInitialUnreadCounts();
+      // IMPORTANTE: Se elimina el setInterval. Las actualizaciones ahora son vía WebSocket.
+      // const interval = setInterval(fetchInitialUnreadCounts, 10000); 
+      // return () => clearInterval(interval); 
+    }
+  }, [isCurrentUserIdLoaded, chatUsers, fetchInitialUnreadCounts]); // Dependencias
+
+// --- Efecto combinado para todos los pollings ---
+  useEffect(() => {
+    if (!currentUserId || !isCurrentUserIdLoaded) return;
+
+    // 1. Polling para historial de mensajes (solo si hay un chat abierto)
+    const messagesInterval = selectedUser && setInterval(() => {
+      fetchMessagesHistory(currentUserId, selectedUser.id);
+    }, 2000);
+
+    // 2. Polling para marcar como leído (solo si hay un chat abierto)
+    const markAsReadInterval = selectedUser && setInterval(() => {
+      markMessagesAsRead(selectedUser.id, currentUserId);
+    }, 3000);
+
+    // 3. Polling para notificaciones no leídas (siempre activo)
+    const unreadInterval = setInterval(() => {
+      fetchInitialUnreadCounts();
+    }, 2000);
+
+    return () => {
+      messagesInterval && clearInterval(messagesInterval);
+      markAsReadInterval && clearInterval(markAsReadInterval);
+      clearInterval(unreadInterval);
+    };
+  }, [
+    currentUserId,
+    isCurrentUserIdLoaded,
+    selectedUser,
+    fetchMessagesHistory,
+    markMessagesAsRead,
+    fetchInitialUnreadCounts
+  ]);
+
+  // --- Función para enviar un mensaje ---
   const sendMessage = () => {
-    if (!newMessage.trim() || !selectedUser || currentUserId === null) return; 
+    // Valida que haya mensaje, usuario seleccionado y que el usuario actual esté logueado
+    if (!newMessage.trim() || !selectedUser || !currentUserId) return;
 
+    // Crea un mensaje temporal para "optimismo UI" (se muestra antes de la confirmación del servidor)
     const tempId = Date.now();
     const tempMessage = {
       tempId,
-      senderId: Number(currentUserId),  
+      senderId: Number(currentUserId), // Asegura que sea un número si el ID viene como string
       receiverId: selectedUser.id,
       content: newMessage.trim(),
-      sentAt: new Date().toISOString(),
-      isTemp: true
+      sentAt: new Date().toISOString(), // Fecha actual
+      isTemp: true, // Bandera para identificarlo como temporal
+      status: 'sent' // Estado inicial 'sent'
     };
 
-    setMessages(prev => [...prev, tempMessage]);
-    setNewMessage('');
-    scrollToBottom();
+    setMessages(prev => [...prev, tempMessage]); // Añade el mensaje temporal a la lista
+    setNewMessage(''); // Limpia el input del mensaje
+    scrollToBottom(); // Desplaza al final
 
+    // Si el cliente STOMP está activo, envía el mensaje via WebSocket
     if (stompClientRef.current?.active) {
       const messageToSend = {
         senderId: Number(currentUserId),
         receiverId: selectedUser.id,
         content: newMessage.trim(),
-        tempId
+        tempId // Incluye el tempId para que el backend lo devuelva en la confirmación
       };
 
       stompClientRef.current.publish({
-        destination: "/app/chat.sendMessage",
-        body: JSON.stringify(messageToSend),
+        destination: "/app/chat.sendMessage", // Destination para el controlador del backend
+        body: JSON.stringify(messageToSend), // Cuerpo del mensaje en JSON
         headers: {
           'content-type': 'application/json'
         }
       });
-    } else {
-      console.error('sendMessage: No hay conexión STOMP activa');
-      setConnectionStatus('error');
     }
   };
 
-  // Manejar selección de usuario
-  const handleSelectUser = async (user) => {
+  // --- Manejador para seleccionar un usuario de la lista de chats ---
+  const handleSelectUser = (user) => {
     if (!user || !user.id) return;
-    setSelectedUser(user);
-    setShowChatList(false);
-    if (typeof onChatOpen === 'function') {
-      onChatOpen();
-    }
 
-    // Llamada para marcar mensajes como leídos en backend
-    try {
-      await fetch(`/api/messages/mark-as-read?userId=${user.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // agrega autenticación si la tienes
-        }
-      });
+    // Cuando seleccionas un chat, marcas sus mensajes como leídos
+    markMessagesAsRead(user.id, currentUserId); // Esto envía la petición al backend
 
-      // Actualizar estado local para remover notificaciones
-      setUnreadMessages(prev => {
-        const updated = { ...prev };
-        delete updated[user.id];
-        return updated;
-      });
+    // Y también actualizas los estados locales de conteo a cero para ese usuario
+    setUnreadMessages(prev => {
+      const updated = { ...prev };
+      delete updated[user.id]; // Elimina la bandera de no leído
+      return updated;
+    });
+    setUnreadCounts(prev => ({
+      ...prev,
+      [user.id]: 0 // Restablece el conteo a 0
+    }));
 
-      // Opcional: también puedes actualizar los mensajes locales para cambiar status a "read"
-      setMessages(prevMessages => 
-        prevMessages.map(msg => 
-          (msg.senderId === user.id && msg.status !== 'read') ? { ...msg, status: 'read' } : msg
-        )
-      );
-    } catch (error) {
-      console.error('Error marcando mensajes como leídos:', error);
-    }
-    
-    setShowChatList(false);
-    setSelectedUser(user);
+    setSelectedUser(user); // Establece el usuario seleccionado
+    setShowChatList(false); // Oculta la lista de chats y muestra el chat individual
+    onChatOpen?.(); // Llama al callback si está definido
   };
 
-  // Manejar volver a la lista
+  // --- Manejador para volver a la lista de chats (desde el chat individual en móvil) ---
   const handleBackToList = () => {
-    setSelectedUser(null);
-    setShowChatList(true);
-    setKeyboardHeight(0);
+    setSelectedUser(null); // Deselecciona el usuario
+    setShowChatList(true); // Muestra la lista de chats
     if (typeof onChatClose === 'function') {
-      onChatClose();
+      onChatClose(); // Llama al callback si está definido
     }
   };
 
-  // Filtrar usuarios por término de búsqueda (con validación)
-  const filteredUsers = chatUsers.filter(user =>  // Usamos `chatUsers` aquí
-    user && user.id && user.username && 
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtrado y ordenamiento de usuarios en la lista de chats
+const filteredUsers = chatUsers
+  .filter(user => user?.id && user?.username && 
+         user.username.toLowerCase().includes(searchTerm.toLowerCase()))
+  .map(user => {
+    // 1. Filtra los mensajes de ESTA conversación (usando tus nombres de variables)
+    const chatMessages = messages.filter(m => 
+      (m.sender_id === user.id && m.receiver_id === currentUserId) || 
+      (m.receiver_id === user.id && m.sender_id === currentUserId)
+    );
 
-  // Componente de burbuja de mensaje
+    // 2. Encuentra el último mensaje (comparando fecha y hora con `sent_at`)
+    const lastMessage = chatMessages.sort((a, b) => {
+      return new Date(b.sent_at) - new Date(a.sent_at); // Orden descendente directo
+    })[0]; // El primer elemento del array ya ordenado
+
+    return {
+      user,
+      hasUnread: unreadCounts[user.id] > 0,
+      lastMessageTime: lastMessage ? new Date(lastMessage.sent_at) : null
+    };
+  })
+  .sort((a, b) => {
+    // PRIORIDAD 1: Chats con mensajes no leídos (primero)
+    if (a.hasUnread && !b.hasUnread) return -1;
+    if (!a.hasUnread && b.hasUnread) return 1;
+
+    // PRIORIDAD 2: Ordena por fecha y hora del último mensaje (más reciente primero)
+    if (a.lastMessageTime && b.lastMessageTime) {
+      return b.lastMessageTime.getTime() - a.lastMessageTime.getTime(); // Descendente
+    }
+
+    // PRIORIDAD 3: Si solo uno tiene mensajes
+    if (a.lastMessageTime) return -1;
+    if (b.lastMessageTime) return 1;
+
+    return 0; // Mantener orden si no hay mensajes
+  })
+  .map(item => item.user);
+
+
+
+
+  // --- Componente de burbuja de mensaje individual ---
   const MessageBubble = ({ message, currentActiveUserId }) => { 
-    const isOwn = message.senderId === Number(currentActiveUserId);
+    const isOwn = message.senderId === Number(currentActiveUserId); // Determina si el mensaje es del usuario actual
+    // Estilos de la burbuja según si es propio o de otro usuario
     const messageStyle = isOwn ? currentTheme.colors.message.own : currentTheme.colors.message.other;
+    // Formatea la hora del mensaje
     const sentAt = message.sentAt ? new Date(message.sentAt) : null;
 
     return (
@@ -555,8 +613,8 @@ const renderUserList = () => (
         <div
           className={`max-w-[80%] min-w-[48px] p-[6px_7px_5px_9px] rounded-[7.5px] ${messageStyle} relative`}
           style={{
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word'
+            wordBreak: 'break-word', // Rompe palabras largas para evitar desbordamiento
+            overflowWrap: 'break-word' // Asegura que el texto se envuelva correctamente
           }}
         >
           <p className="whitespace-pre-wrap text-left pr-[54px] text-[14.2px] leading-[19px] mb-[2px]">
@@ -569,13 +627,14 @@ const renderUserList = () => (
               </span>
             )}
             {isOwn && (
+              // Indicador de leído (✓✓)
               <span
                 className={`text-[12px] font-bold tracking-tighter ${
-                  message.status === 'read'
-                    ? 'text-lime-400'  
+                  message.status === 'read' // Si el mensaje está marcado como leído
+                    ? 'text-lime-300'  // Color lima para leído
                     : theme === 'light'
-                    ? 'text-gray-300'    
-                    : 'text-gray-300'    
+                    ? 'text-gray-300'     
+                    : 'text-gray-400'     
                 }`}
               >
                 ✓✓
@@ -587,48 +646,39 @@ const renderUserList = () => (
     );
   };
 
-  // Efecto para manejar la apertura automática
-  useEffect(() => {
-    if (location.state?.autoOpenChat && location.state?.targetUser) {
-      setSelectedUser(location.state.targetUser);
-      setShowChatList(false);
-      onChatOpen && onChatOpen();
-      
-      window.history.replaceState({}, document.title);
-      
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView();
-        document.getElementById('message-input')?.focus();
-      }, 100);
-    }
 
-    return () => {
-      onChatClose && onChatClose();
-    };
-  }, [location.state]);
-  
-  
+
+  // Lógica para las clases de altura condicional
+  const mainContainerHeightClasses = selectedUser && !showChatList
+    ? 'fixed inset-0 h-screen' // Ocupa toda la pantalla cuando hay chat seleccionado en móvil
+    : 'h-[75vh] md:h-[89.1vh] lg:h-[89.1vh]'; // Altura normal con padding para el navbar
+
+  // --- Renderizado del componente ChatComponent ---
   return (
-    <div className={`flex flex-col w-full max-w-full mx-auto rounded-none shadow-none overflow-hidden
-                     ${currentTheme.colors.primary} ${currentTheme.colors.text}
-                     ${selectedUser && !showChatList ? 'fixed inset-0 h-screen md:static md:h-full md:inset-auto' : 'h-full'}
-                     md:h-[calc(100vh-65px)] md:max-w-7xl md:mx-auto md:shadow-xl
-                     lg:h-[calc(100vh-65px)]`}>
+    // Contenedor principal: ocupa el alto total disponible menos el navbar de abajo
+    // En móvil, cuando hay un chat seleccionado, se convierte en un overlay fixed para toda la pantalla.
+    <div className={`flex flex-col ${mainContainerHeightClasses} overflow-hidden
+      ${selectedUser && !showChatList ? 'fixed inset-0 z-20 bg-white dark:bg-gray-900' : ''}
+      ${currentTheme.colors.primary} ${currentTheme.colors.text}`}>
 
-      <div className="flex flex-1 overflow-y-auto max-h-[calc(100vh-56px-56px)]">
+
+      {/* Este div flex-1 ahora es el que distribuye el espacio horizontalmente*/}
+      <div className="flex flex-1 min-h-0">
         {/* Panel lateral - Lista de chats */}
         <div className={`w-full flex-col
-                         ${showChatList ? 'flex' : 'hidden'}
-                         md:w-80 lg:w-96 md:min-w-[280px] md:border-r ${currentTheme.colors.border} md:flex`}>
-          {/* Cabecera del panel de chats */}
+                 ${showChatList ? 'flex' : 'hidden'}
+                 md:w-80 lg:w-96 md:min-w-[280px] md:border-r ${currentTheme.colors.border} md:flex
+                 relative flex flex-col min-h-0`}>
+
+          {/* Cabecera del panel de chats (sticky) */}
           <div className={`sticky top-0 z-10 p-4 border-b ${currentTheme.colors.border} ${theme === 'light' ? 'bg-blue-500' : 'bg-blue-600'} text-white`}>
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">Mensajes</h2>
             </div>
           </div>
           
-          {/* Barra de búsqueda de chats */}
-          <div className={`sticky top-14 z-10 p-3 border-b ${currentTheme.colors.border}`}>
+          {/* Barra de búsqueda de chats (sticky) */}
+          <div className={`sticky top-[56px] z-10 p-3 border-b ${currentTheme.colors.border} ${currentTheme.colors.primary}`}>
             <div className="relative">
               <input
                 type="text"
@@ -642,84 +692,99 @@ const renderUserList = () => (
             </div>
           </div>
           
-          {/* Lista de usuarios (seguidos y seguidores) */}
+          {/* Lista de usuarios (con scroll) */}
           <div className="flex-1 overflow-y-auto">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-full">
-                <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${theme === 'light' ? 'border-blue-500' : 'border-blue-400'}`}></div>
-              </div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center h-full p-4">
-                <p className={currentTheme.colors.emptyState}>
-                  {searchTerm ? 'No se encontraron chats' : 'No tienes chats disponibles'}
-                </p>
-              </div>
-            ) : (
-              <ul>
-                {filteredUsers.map(user => (
-                  <li
-                    key={user.id}
-                    className={`flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200
-                                ${selectedUser?.id === user.id ? `${currentTheme.selectedUser} border-l-4 ${theme === 'light' ? 'border-blue-500' : 'border-blue-400'}` :
-                                `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`}`}
-                    onClick={() => handleSelectUser(user)}
-                  >
-                    {user.imageUrl ? (
-                      <img
-                        src={user.imageUrl}
-                        alt={user.username}
-                        className="w-12 h-12 rounded-full object-cover mr-3"
-                      />
-                    ) : (
-                      <FaUserCircle className={`w-12 h-12 ${currentTheme.colors.icon} mr-3`} />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium truncate">{user.username}</h4>
-                      <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} truncate`}>
-                        {user.lastMessage || 'Nuevo chat'}
-                      </p>
-                      {unreadMessages[user.id] && (
-                        <span className="inline-block w-3 h-3 bg-red-500 rounded-full ml-2" />
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+          {isLoading ? ( // Muestra un spinner si está cargando
+            <div className="h-full flex items-center justify-center ">
+              <div 
+                className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${
+                  theme === 'light' ? 'border-blue-500' : 'border-blue-400'
+                }`}
+              ></div>
+            </div>
+          ) : filteredUsers.length === 0 ? ( // Mensaje si no hay chats o la búsqueda no devuelve resultados
+            <div className="h-full flex flex-col items-center justify-center p-4">
+              <p className={currentTheme.colors.emptyState}>
+                {searchTerm ? 'No se encontraron chats' : 'No tienes chats disponibles'}
+              </p>
+            </div>
+          ) : ( // Muestra la lista de usuarios
+            <ul className="h-full">
+              {filteredUsers.map(user => (
+                <li
+                  key={user.id}
+                  className={`relative flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200 ${
+                    selectedUser?.id === user.id 
+                      ? `${currentTheme.selectedUser} border-l-4 ${
+                          theme === 'light' ? 'border-blue-500' : 'border-blue-400'
+                        }`
+                      : `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`
+                  }`}
+                  onClick={() => handleSelectUser(user)}
+                >
+                  {user.imageUrl ? (
+                    <img
+                      src={user.imageUrl}
+                      alt={user.username}
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover mr-3"
+                    />
+                  ) : (
+                    <FaUserCircle 
+                      className={`w-10 h-10 sm:w-12 sm:h-12 ${currentTheme.colors.icon} mr-3`} 
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium truncate text-sm sm:text-base">
+                      {user.username}
+                    </h4>
+                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} truncate`}>
+                      {messages.find(m => m.senderId === user.id || m.receiverId === user.id)?.content || 'Nuevo chat'}
+                    </p>
+                  </div>
+                  
+                  {/* Notificación de mensajes no leídos - Versión corregida */}
+                  {((unreadCounts[user.id] || 0) > 0) && (
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 min-w-[20px] h-[20px] px-1 flex items-center justify-center bg-blue-500 text-white text-xs font-bold rounded-full">
+                      {unreadCounts[user.id] > 99 ? '99+' : unreadCounts[user.id]}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
           </div>
         </div>
 
         {/* Área de chat principal */}
         <div className={`flex-1 flex flex-col
-                         ${selectedUser && !showChatList ? 'flex' : 'hidden'}
-                         md:flex`}>
-          {selectedUser ? (
+                         ${selectedUser && !showChatList ? 'flex' : 'hidden'} {/* Oculto en móvil si la lista de chats está visible */}
+                         md:flex`}> {/* Siempre visible en desktop */}
+          {selectedUser ? ( // Si hay un usuario seleccionado, muestra el chat
             <>
               {/* Cabecera del chat actual */}
               <div className={`p-3 border-b ${currentTheme.colors.border} flex items-center ${theme === 'light' ? 'bg-blue-500' : 'bg-blue-600'} text-white`}>
                 <button
                   className="md:hidden mr-2 p-1 rounded-full hover:bg-white/10"
-                  onClick={handleBackToList}
+                  onClick={handleBackToList} // Botón para volver a la lista (solo en móvil)
                 >
                   <FaArrowLeft size={18} />
                 </button>
-                {selectedUser.imageUrl ? (
+                {selectedUser.imageUrl ? ( // Muestra la imagen de perfil del usuario seleccionado
                   <img
                     src={selectedUser.imageUrl}
                     alt={selectedUser.username}
                     className="w-10 h-10 rounded-full mr-3 border-2 border-white object-cover"
                   />
-                ) : (
+                ) : ( // O un icono de usuario si no hay imagen
                   <FaUserCircle className="w-10 h-10 text-white mr-3" />
                 )}
                 <div className="flex-1">
-                  <h3 className="font-bold">{selectedUser.username}</h3>
+                  <h3 className="font-bold">{selectedUser.username}</h3> {/* Nombre del usuario seleccionado */}
                 </div>
               </div>
 
-              {/* Área de mensajes */}
-              <div
-                className="flex-1 p-4 overflow-y-auto flex flex-col gap-3"
+              {/* Área de mensajes (con scroll) */}
+              <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3 min-h-0"
                 style={{
                   backgroundColor: theme === 'dark' ? '#1a202c' : '#ffffff',
                   backgroundImage: theme === 'light'
@@ -727,11 +792,12 @@ const renderUserList = () => (
                     : 'linear-gradient(rgba(26, 32, 44, 0.9), rgba(26, 32, 44, 0.9)), url("https://web.whatsapp.com/img/bg-chat-tile-dark_04fcacde539c58cca6745483d4858c52.png")',
                   backgroundSize: '200px 200px',
                   backgroundRepeat: 'repeat',
-                  paddingBottom: `${keyboardHeight + (keyboardHeight > 0 ? 10 : 20)}px`
                 }}
               >
-                {/* Condición para mostrar mensajes solo si currentUserId ya está cargado */}
+
+              
                 {isCurrentUserIdLoaded && currentUserId !== null && messages.length === 0 ? (
+                  // Mensaje si no hay mensajes en la conversación
                   <div className="flex-1 flex flex-col items-center justify-center">
                     <div className={`text-center max-w-md p-6 rounded-lg ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'}`}>
                       <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-gray-200' : 'bg-gray-600'}`}>
@@ -744,31 +810,26 @@ const renderUserList = () => (
                     </div>
                   </div>
                 ) : (
-                  // Solo renderizamos los MessageBubble si currentUserId está definido y no es null
+                  // Muestra las burbujas de mensajes
                   isCurrentUserIdLoaded && currentUserId !== null ? messages.map((message) => (
                     <MessageBubble
-                      key={message.id || message.tempId}
+                      key={message.id || message.tempId} // Usa id real o tempId para las claves
                       message={message}
                       currentActiveUserId={currentUserId}  
                     />
                   )) : (
+                    // Spinner si aún se está cargando el usuario o mensajes
                     <div className="flex justify-center items-center h-full">
                       <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${theme === 'light' ? 'border-blue-500' : 'border-blue-400'}`}></div>
                     </div>
                   )
                 )}
-                <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} /> {/* Div para el scroll al final */}
               </div>
 
               {/* Input para enviar mensajes */}
               <div
-                ref={chatInputContainerRef}
-                className={`p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-                            fixed bottom-3 w-full md:relative md:w-auto`}
-                style={{
-                  paddingBottom: `${keyboardHeight > 0 ? keyboardHeight : 0}px`,
-                  transition: 'padding-bottom 0.2s ease-out',
-                }}
+                className={`p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}`}
               >
                 <div className="flex items-center gap-2">
                   <input
@@ -779,19 +840,20 @@ const renderUserList = () => (
                     placeholder="Escribe un mensaje..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()} // Envía al presionar Enter
                   />
                   <button
                     onClick={sendMessage}
+                    // Deshabilita el botón si no hay mensaje, no hay conexión, o no hay usuario actual
                     disabled={!newMessage.trim() || connectionStatus !== 'connected' || currentUserId === null} 
                     className={buttonClasses}
                   >
-                    <FaPaperPlane size={16} />
+                    <FaPaperPlane size={16} /> {/* Icono de enviar */}
                   </button>
                 </div>
               </div>
             </>
-          ) : (
+          ) : ( // Si no hay usuario seleccionado, muestra un mensaje de bienvenida
             <div className="flex-1 flex flex-col items-center justify-center">
               <div className={`text-center max-w-sm p-6 rounded-lg ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'}`}>
                 <div className={`w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-gray-200' : 'bg-gray-600'}`}>

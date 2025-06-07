@@ -1,12 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FaHome, FaComment, FaUser, FaQrcode } from "react-icons/fa";
 import { FiLogIn, FiUserPlus, FiLogOut } from "react-icons/fi";
+import { jwtDecode } from 'jwt-decode';
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 
-const Navbar = ({ hideOnChat = false }) => {
+
+const Navbar = ({ hideOnChat = false, isMobile = false }) => {
   const { isLoggedIn, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -14,6 +16,64 @@ const Navbar = ({ hideOnChat = false }) => {
     logout();
     navigate("/");
   };
+
+  
+  
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [isCurrentUserIdLoaded, setIsCurrentUserIdLoaded] = useState(false);
+  const [tieneMensajesNuevos, setTieneMensajesNuevos] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Obtener ID del usuario actual desde el token
+    useEffect(() => {
+      const token = sessionStorage.getItem('token');
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          setCurrentUserId(decoded.sub);
+          setIsCurrentUserIdLoaded(true);
+        } catch (error) {
+          console.error('Error al decodificar el token:', error);
+        }
+      }
+    }, [isLoggedIn]);
+  
+
+  useEffect(() => {
+    let interval;
+
+    const checkMensajesNoLeidos = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!currentUserId || !token) return;
+
+        const res = await fetch(`http://localhost:8080/api/messages/unread-count/${currentUserId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await res.json();
+        setTieneMensajesNuevos(data.unreadCount > 0);
+        setUnreadCount(data.unreadCount);
+      } catch (err) {
+        console.error("Error al comprobar mensajes no leídos", err);
+      }
+    };
+
+    if (isLoggedIn && isCurrentUserIdLoaded) {
+      checkMensajesNoLeidos(); // Ejecutar inmediatamente
+      interval = setInterval(checkMensajesNoLeidos, 2000); // Luego cada 2s
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [currentUserId, isLoggedIn, isCurrentUserIdLoaded]);
+
+
+
 
   return (
     <>
@@ -23,7 +83,7 @@ const Navbar = ({ hideOnChat = false }) => {
           hideOnChat ? "-translate-y-full" : "translate-y-0"
         }`}
       >
-        <Card className="flex items-center justify-center h-16">
+        <Card className="flex items-center justify-center h-16 border-none">
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-2xl">📚</span>
             <span className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
@@ -35,7 +95,7 @@ const Navbar = ({ hideOnChat = false }) => {
 
       {/* DESKTOP TOP BAR */}
       <nav className="hidden md:block sticky top-0 z-50 bg-white dark:bg-gray-900 shadow">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 border-none">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
@@ -60,8 +120,13 @@ const Navbar = ({ hideOnChat = false }) => {
               {/* Mensajes */}
               {isLoggedIn && (
                 <Link to="/messages" className="group flex items-center space-x-2 px-3 py-2 rounded-lg transition">
-                  <span className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/40 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/60 transition">
+                  <span className="relative w-8 h-8 flex items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/40 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/60 transition">
                     <FaComment className="text-purple-600 dark:text-purple-400 text-sm" />
+                    {tieneMensajesNuevos && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white dark:border-gray-900">
+                        {unreadCount > 200 ? '200+' : unreadCount}
+                      </span>
+                    )}
                   </span>
                   <span className="text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 text-sm">
                     Mensajes
@@ -113,7 +178,7 @@ const Navbar = ({ hideOnChat = false }) => {
 
       {/* MOBILE BOTTOM NAV */}
       <div
-        className={`fixed bottom-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-2 md:hidden z-50 transition-all duration-300 ${
+        className={`fixed bottom-0 w-full z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-2 md:hidden z-50 transition-all duration-300 ${
           hideOnChat ? "translate-y-full" : "translate-y-0"
         }`}
       >
@@ -135,8 +200,13 @@ const Navbar = ({ hideOnChat = false }) => {
               to="/messages"
               className="flex flex-col items-center justify-center p-2 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
             >
-              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-1">
+              <div className=" relative w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-1">
                 <FaComment className="text-purple-600 dark:text-purple-400 text-lg" />
+                {tieneMensajesNuevos && (
+                  <span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full border-2 border-white dark:border-gray-900">
+                    {unreadCount > 200 ? '200+' : unreadCount}
+                  </span>
+                )}
               </div>
               <span className="text-xs">Mensajes</span>
             </Link>

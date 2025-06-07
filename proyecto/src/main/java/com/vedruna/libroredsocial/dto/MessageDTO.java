@@ -2,6 +2,8 @@ package com.vedruna.libroredsocial.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 
 @Data
@@ -10,10 +12,12 @@ public class MessageDTO {
     private Integer senderId; // ID del remitente
     private Integer receiverId; // ID del receptor
     private String content; // Contenido del mensaje
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")// Formato de fecha y hora ISO 8601
     private LocalDateTime sentAt; // Fecha y hora de envío (se asigna en el backend)
     private String status; // Estado del mensaje (enviado, recibido, leído, etc.)
 
-    // Constructor vacío (necesario para la deserialización JSON)
+    // Constructor vacío (necesario para la deserialización JSON, Mapper)
     public MessageDTO() {
     }
 

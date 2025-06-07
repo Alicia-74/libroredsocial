@@ -65,24 +65,28 @@ public class SecurityConfig {
 
                     // 3. Demás rutas públicas (mantener el orden si es posible de más específico a menos)
                     .requestMatchers("/api/v1/auth/**").permitAll()
+                    .requestMatchers("/api/users/**").permitAll()
                     .requestMatchers("/api/books/fav/**").permitAll()
                     .requestMatchers("/api/books/read/**").permitAll()
                     .requestMatchers("/api/users/all").permitAll()
                     .requestMatchers("/api/users/search/**").permitAll()
-                    // .requestMatchers("/api/users/me").authenticated() // Esta es una ruta autenticada, déjala así o muévela después de anyRequest().authenticated()
                     .requestMatchers("/api/follow/**").permitAll()
+                    .requestMatchers("/api/users/me").authenticated() // Esta es una ruta autenticada, déjala así o muévela después de anyRequest().authenticated()
                     .requestMatchers("/api/follow/{id}/followers").permitAll()
                     .requestMatchers("/api/follow/{id}/following").permitAll()
                     .requestMatchers("/api/follow/{id}/is-following").permitAll()
-                    .requestMatchers("/api/users/**").permitAll() // Esta es muy amplia, asegúrate de que no pise nada que deba estar protegido
                     .requestMatchers("/api/books/external/book/**").permitAll()
                     .requestMatchers("/api/books/{userId}/read-books").permitAll()
                     .requestMatchers("/api/books/{userId}/favorite-books").permitAll()
                     .requestMatchers("/api/users/{userId}/theme").permitAll()
-                    .requestMatchers("/api/messages/**").permitAll() // Esta ruta es también bastante amplia
+                    .requestMatchers("/api/messages/**").permitAll()
                     .requestMatchers("/api/messages/conversation/{user1Id}/{user2Id}").permitAll()
                     .requestMatchers("/api/messages/chats/{userId}").permitAll()
-                    // 4. Cualquier otra solicitud debe estar autenticada
+                    .requestMatchers("/api/messages/unread/**").permitAll()
+                    .requestMatchers("/api/messages/unread/{emisorId}/{receptorId}").permitAll()
+                    .requestMatchers("/api/messages/unread-counts-by-sender/{userId}").permitAll()
+                    .requestMatchers("/api/messages/chat.sendMessage").permitAll()
+                    //Cualquier otra solicitud debe estar autenticada
                     .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

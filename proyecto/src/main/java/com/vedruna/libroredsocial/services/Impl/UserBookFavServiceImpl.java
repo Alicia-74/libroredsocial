@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.vedruna.libroredsocial.persistance.model.Book;
 import com.vedruna.libroredsocial.persistance.model.UserBookFav;
-import com.vedruna.libroredsocial.persistance.model.UserBookRead;
 import com.vedruna.libroredsocial.persistance.repository.UserBookFavRepository;
 import com.vedruna.libroredsocial.services.UserBookFavServiceI;
 

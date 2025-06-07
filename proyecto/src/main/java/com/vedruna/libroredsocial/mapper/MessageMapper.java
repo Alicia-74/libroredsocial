@@ -13,13 +13,12 @@ public class MessageMapper {
         }
         MessageDTO dto = new MessageDTO();
         dto.setId(message.getId());
-        // Asegúrate de que message.getSender() y message.getReceiver() no sean nulos
-        // o maneja la excepción si pueden serlo
+        //  message.getSender() y message.getReceiver() no sean nulos
         dto.setSenderId(message.getSender() != null ? message.getSender().getId() : null);
         dto.setReceiverId(message.getReceiver() != null ? message.getReceiver().getId() : null);
         dto.setContent(message.getContent());
         dto.setSentAt(message.getSentAt());
-        dto.setStatus(message.getStatus()); // Asegúrate de que el DTO tiene este campo
+        dto.setStatus(message.getStatus()); 
         return dto;
     }
 

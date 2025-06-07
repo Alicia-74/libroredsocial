@@ -146,9 +146,15 @@ const Home = () => {
     }
   }, [showLoginAlert]);
 
+
+
+  
+
   return (
     <div className={`min-h-screen py-8 transition-colors duration-300 ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+
+
         {/* Alertas para login y errores */}
         {showLoginAlert && (
           <div className="mb-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md shadow-md animate-fade-in">

@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaArrowLeft, FaCamera, FaTrash, FaSearch} from "react-icons/fa"; // Importa FaPaperPlane para el botón de enviar mensaje
-import { FiSun, FiMoon, FiLogOut } from "react-icons/fi";
+import { FiSun, FiMoon, FiLogOut, FiAlertTriangle, FiCheckCircle } from "react-icons/fi";
 import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
@@ -41,6 +41,68 @@ const Profile = () => {
   const [booksPerPage] = useState(4); // Cantidad de libros a mostrar por página
   const [currentBookPage, setCurrentBookPage] = useState(1); // Página actual de la lista de libros
 
+
+
+    //Permiso para aceptar recibir notificaciones:
+
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+
+  useEffect(() => {
+    if (Notification.permission === 'default') {
+      setShowNotificationPrompt(true); // Mostrar el modal para pedir permiso
+    } else if (Notification.permission === 'denied') {
+      setNotificationAlertMessage("Has bloqueado las notificaciones. Puedes habilitarlas en la configuración del navegador.");
+      setShowNotificationAlert(true);
+      setShowNotificationPrompt(false);
+      setTimeout(() => setShowNotificationAlert(false), 3000);
+    } else if (Notification.permission === 'granted') {
+      setNotificationAlertMessage("Las notificaciones ya están activadas.");
+      setShowNotificationAlert(true);
+      setShowNotificationPrompt(false);
+      setTimeout(() => setShowNotificationAlert(false), 3000);
+    }
+  }, []);
+
+
+  const NotificationAlert = ({ message, onClose }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-auto shadow-lg border border-gray-300 dark:border-gray-700">
+        <p className="text-gray-900 dark:text-gray-100 mb-4">{message}</p>
+        <button
+          onClick={onClose}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  );
+
+  
+const [showNotificationAlert, setShowNotificationAlert] = useState(false);
+const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
+
+  const handleRequestPermission = () => {
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      setNotificationAlertMessage("¡Notificaciones activadas correctamente!");
+    } else if (permission === "denied") {
+      setNotificationAlertMessage("Has bloqueado las notificaciones. Puedes habilitarlas en la configuración del navegador.");
+    } else {
+      setNotificationAlertMessage("No se concedió el permiso para notificaciones.");
+    }
+
+    setShowNotificationAlert(true);
+    setShowNotificationPrompt(false);
+
+    // Desaparece la alerta después de 1 segundo
+    setTimeout(() => setShowNotificationAlert(false), 1000);
+  });
+};
+
+
+
+
   /**
    * Efecto para cargar los datos iniciales del usuario
    * Se ejecuta al montar el componente o cuando cambia la navegación (por ejemplo, al redirigir al login)
@@ -59,6 +121,8 @@ const Profile = () => {
     setCurrentUserId(decoded.sub); // Establece el ID del usuario logueado
      console.log("Token decodificado:", decoded); // Paso 2
       console.log("ID de usuario (decoded.sub):", decoded.sub); // Paso 3
+
+
 
     /**
      * Función asíncrona para obtener los datos del usuario desde la API
@@ -236,8 +300,65 @@ const Profile = () => {
     );
   }
 
+
+
+
   return (
     <div className={`min-h-screen ${theme === "light" ? "bg-gray-50" : "bg-gray-900"} transition-colors duration-300`}>
+    
+      {showNotificationAlert && (
+        <div
+          className={`mb-6 p-4 rounded-md shadow-md animate-fade-in max-w-md mx-auto fixed top-4 left-1/2 transform -translate-x-1/2 z-50
+            ${
+              notificationAlertMessage.includes("activadas")
+                ? "bg-green-100 border-l-4 border-green-500 text-green-700 dark:bg-green-200 dark:text-green-900"
+                : "bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 dark:bg-yellow-200 dark:text-yellow-900"
+            }`}
+        >
+          <div className="flex items-center">
+            {notificationAlertMessage.includes("activadas") ? (
+              <FiCheckCircle className="mr-2 text-xl" />
+            ) : (
+              <FiAlertTriangle className="mr-2 text-xl" />
+            )}
+            <p>{notificationAlertMessage}</p>
+          </div>
+
+        </div>
+      )}
+
+
+
+    
+      {/* alerta pedir permiso de notificación */}
+      
+      {showNotificationPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+          <div className="w-[320px] p-6 rounded-xl shadow-xl bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-600 transition">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              ¿Permitir notificaciones?
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+              Activa las notificaciones para saber cuándo recibes nuevos mensajes.
+            </p>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowNotificationPrompt(false)}
+                className="text-sm px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                No, gracias
+              </button>
+              <button
+                onClick={handleRequestPermission}
+                className="text-sm px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Activar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Componente de lista de seguidores/seguidos (modal) */}
       {followListConfig.show && (
         <UserFollowList

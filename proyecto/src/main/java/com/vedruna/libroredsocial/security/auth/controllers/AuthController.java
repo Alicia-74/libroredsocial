@@ -1,7 +1,10 @@
 package com.vedruna.libroredsocial.security.auth.controllers;
 
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,11 +21,20 @@ public class AuthController {
 
     @Autowired
     private AuthServiceI authService;
-
-    @PostMapping(value = "/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginRequestDTO request) {
-        return ResponseEntity.ok(authService.login(request));
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
+        try {
+            AuthResponseDTO response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            // Aquí devolvemos directamente JSON con mensaje de error
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Correo o contraseña incorrectos"));
+        }
     }
+
 
     @PostMapping(value = "/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequestDTO request) {

@@ -12,6 +12,29 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+
+  const validatePassword = (password) => {
+    const errors = [];
+
+    if (password.length < 8) {
+      errors.push("La contraseña debe tener al menos 8 caracteres.");
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Debe contener al menos una letra mayúscula.");
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push("Debe contener al menos una letra minúscula.");
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push("Debe contener al menos un número.");
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>_\-+=/\\[\]`~]/.test(password)) {
+      errors.push("Debe contener al menos un símbolo.");
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -30,6 +53,14 @@ const Register = () => {
       setIsLoading(false);
       return;
     }
+
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      setError(passwordErrors.join(" "));
+      setIsLoading(false);
+      return;
+    }
+
 
     try {
       const response = await fetch("http://localhost:8080/api/v1/auth/register", {
