@@ -301,6 +301,21 @@ const [showInputMargin, setShowInputMargin] = useState(false);
   }
 }, [id, chatUsers, location.state, isLoading]);
 
+
+
+// Cuando la lista de usuarios se cargue, selecciona el usuario por id si aún no está seleccionado
+  useEffect(() => {
+    if (id && chatUsers.length > 0 && !selectedUser) {
+      const user = chatUsers.find(u => String(u.id) === String(id));
+      if (user) {
+        setSelectedUser(user);
+      }
+    }
+  }, [id, chatUsers, selectedUser]);
+
+
+
+  
   // --- useEffect para configurar la conexión WebSocket y sus suscripciones ---
   // Este es el corazón de la funcionalidad de tiempo real.
   useEffect(() => {
