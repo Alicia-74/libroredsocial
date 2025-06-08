@@ -111,8 +111,6 @@ const [showInputMargin, setShowInputMargin] = useState(false);
   // lo que es bueno para el rendimiento si se pasa como dependencia a otros hooks.
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    setShowInputMargin(true);
-    setTimeout(() => setShowInputMargin(false), 600); // El margen dura 600ms
   }, []);
 
   // --- Función para obtener la lista de usuarios con los que el usuario actual puede chatear ---
@@ -814,7 +812,7 @@ const filteredUsers = chatUsers
                     : 'linear-gradient(rgba(26, 32, 44, 0.9), rgba(26, 32, 44, 0.9)), url("https://web.whatsapp.com/img/bg-chat-tile-dark_04fcacde539c58cca6745483d4858c52.png")',
                   backgroundSize: '200px 200px',
                   backgroundRepeat: 'repeat',
-                  paddingBottom: 30, // Espacio para la barra en móvil
+                  paddingBottom: 10, // Espacio para la barra en móvil
                   transition: 'padding-bottom 0.2s'
                 }}
               >
@@ -856,8 +854,7 @@ const filteredUsers = chatUsers
           <div
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-              w-full z-10 md:static
-              ${showInputMargin ? 'mb-[72px]' : 'mb-[89px]'} md:mb-0
+              w-full z-10 md:static mb-[72px] md:mb-0
             `}
             style={{
               maxWidth: '100vw',
