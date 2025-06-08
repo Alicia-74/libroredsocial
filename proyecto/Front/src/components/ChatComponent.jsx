@@ -661,13 +661,12 @@ const filteredUsers = chatUsers
   return (
     // Contenedor principal: ocupa el alto total disponible menos el navbar de abajo
     // En móvil, cuando hay un chat seleccionado, se convierte en un overlay fixed para toda la pantalla.
-    <div className={`flex flex-col ${mainContainerHeightClasses} overflow-hidden
-      ${selectedUser && !showChatList ? 'fixed inset-0 z-20 bg-white dark:bg-gray-900' : ''}
-      ${currentTheme.colors.primary} ${currentTheme.colors.text}`}
+    <div className={`flex flex-col overflow-hidden
+        ${selectedUser && !showChatList && window.innerWidth >= 768 ? 'fixed inset-0 z-20 bg-white dark:bg-gray-900' : ''}
+        ${currentTheme.colors.primary} ${currentTheme.colors.text}`}
       style={{
         height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
         overflow: selectedUser && !showChatList && window.innerWidth < 768 ? 'auto' : undefined,
-        // Asegura que el contenedor ocupe todo el alto visible
         minHeight: '100dvh'
       }}
     >
@@ -850,7 +849,6 @@ const filteredUsers = chatUsers
             style={{
               maxWidth: '100vw',
               boxSizing: 'border-box',
-              marginTop: window.innerWidth < 768 ? 0 : 'auto'
             }}
           >
             <div className="flex items-center gap-2 w-full">
