@@ -36,7 +36,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Los clientes se conectarán a ws://localhost:8080/ws
         // .withSockJS() habilita el soporte de SockJS para navegadores que no soportan WebSockets nativos.
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:3000") // Permite conexiones desde tu frontend React
+                .setAllowedOrigins("https://libroredsocial-amante-de-los-libros.vercel.app") // Permite conexiones desde tu frontend React
                 .withSockJS();
     }
 }

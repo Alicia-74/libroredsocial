@@ -85,7 +85,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col"  style={{ height: "calc(100vh - 64px)" }}>
+    <div className="flex flex-col">
       <div className="flex-grow flex  justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-10">
         <div className="w-full max-w-xs sm:max-w-md bg-white rounded-xl shadow-lg overflow-hidden  h-[420px] md:h-[420px]">
           {/* Header con gradiente */}
