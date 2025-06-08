@@ -219,7 +219,7 @@ public class UserController {
         } catch (Exception e) {
             // En caso de error, devolver un mensaje de error como JSON
             Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Error: " + e.getMessage());
+            errorResponse.put("error", "Solo se permiten imágenes en formato JPG o PNG. Por favor, selecciona una foto compatible.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
