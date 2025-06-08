@@ -315,7 +315,7 @@ const [showInputMargin, setShowInputMargin] = useState(false);
 
 
 
-  
+
   // --- useEffect para configurar la conexión WebSocket y sus suscripciones ---
   // Este es el corazón de la funcionalidad de tiempo real.
   useEffect(() => {
@@ -767,15 +767,18 @@ const filteredUsers = chatUsers
               {filteredUsers.map(user => (
                 <li
                   key={user.id}
-                  className={`relative flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200 ${
-                    selectedUser?.id === user.id 
-                      ? `${currentTheme.selectedUser} border-l-4 ${
-                          theme === 'light' ? 'border-blue-500' : 'border-blue-400'
-                        }`
-                      : `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`
-                  }`}
+                  className={`relative flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200
+                    ${
+                      selectedUser?.id === user.id && window.innerWidth >= 768
+                        ? 'bg-blue-100' // Color celeste para el chat seleccionado en pantallas md o mayores
+                        : selectedUser?.id === user.id
+                        ? `${currentTheme.selectedUser} border-l-4 ${theme === 'light' ? 'border-blue-500' : 'border-blue-400'}`
+                        : `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`
+                    }
+                  `}
                   onClick={() => handleSelectUser(user)}
                 >
+                  {/* Imagen de perfil o icono de usuario */}
                   {user.imageUrl ? (
                     <img
                       src={user.imageUrl}
