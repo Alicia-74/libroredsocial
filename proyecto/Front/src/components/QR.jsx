@@ -23,11 +23,11 @@ function QR() {
     const qrSize = window.innerWidth < 640 ? 150 : 180; // 150px para móviles (sm), 180px para desktop
 
     return (
-        <div className="flex flex-col items-center justify-center sm:pb-16 bg-gray-100 dark:bg-gray-800 : bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <div className="flex flex-col items-center justify-center sm:h-[80px] bg-gray-100 dark:bg-gray-800 : bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             {showInstructions ? (
                 // Contenedor de Instrucciones
                 <div 
-                    className={`mb-[72px] md:mt-4 md:mb-4 lg:mt-4 lg:mb-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-6 sm:p-8 text-center max-w-xl w-ful
+                    className={`mb-[72px] md:mt-4 md:mb-4 lg:mt-4 lg:mb-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-6 sm:p-8 text-center max-w-xl w-full mx-auto
                                 ${animationClasses} ${showInstructions ? fadeIn : fadeOut}`}
                 >
                     <h1 className="text-2xl sm:text-3xl font-bold text-blue-800 dark:text-blue-200 mb-4 sm:mb-6">
@@ -74,7 +74,7 @@ function QR() {
             ) : (
                 // Contenedor del QR
                 <div 
-                    className={`bg-white dark:bg-blue-900/30 h-full inset-x-0 top-[70px] bottom-[0px] mx-auto mb-7 mt-5 md:mt-12 md:mb-[39px] lg:mt-[53px] lg:mb-16 p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 text-center max-w-xs sm:max-w-sm w-full 
+                    className={`bg-white dark:bg-blue-900/30 h-full inset-x-0 top-[70px] bottom-[0px] mx-auto mb-7 mt-5 md:mt-12 md:mb-[39px] lg:mt-[53px] lg:mb-16 p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 text-center max-w-xs sm:max-w-sm w-full mx-auto
                                 ${animationClasses} ${!showInstructions ? fadeIn : fadeOut}`}
                 >
                     <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-gray-800 dark:text-gray-200">
