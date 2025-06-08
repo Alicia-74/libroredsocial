@@ -833,7 +833,7 @@ const filteredUsers = chatUsers
               {/* Input para enviar mensajes */}
               <div
                 className={`
-                  p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
+                  p-3  bottom-10 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
                   ${selectedUser && !showChatList ? 'fixed bottom-0 left-0 right-0 z-30 md:static' : ''}
                   w-full
                 `}
