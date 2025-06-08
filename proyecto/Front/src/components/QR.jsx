@@ -27,7 +27,7 @@ function QR() {
             {showInstructions ? (
                 // Contenedor de Instrucciones
                 <div 
-                    className={`mb-[72px] md:mt-4 md:mb-4 lg:mt-4 lg:mb-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-6 sm:p-8 text-center max-w-xl w-full mx-auto
+                    className={` md:mt-4 md:mb-4 lg:mt-4 lg:mb-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-6 sm:p-8 text-center max-w-xl w-ful
                                 ${animationClasses} ${showInstructions ? fadeIn : fadeOut}`}
                 >
                     <h1 className="text-2xl sm:text-3xl font-bold text-blue-800 dark:text-blue-200 mb-4 sm:mb-6">
