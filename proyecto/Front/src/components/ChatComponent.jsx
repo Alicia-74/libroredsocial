@@ -769,13 +769,10 @@ const filteredUsers = chatUsers
                   key={user.id}
                   className={`relative flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200
                     ${
-                      selectedUser?.id === user.id && window.innerWidth >= 768
-                        ? 'bg-blue-300' // Color celeste para el chat seleccionado en pantallas md o mayores
-                        : selectedUser?.id === user.id
-                        ? `${currentTheme.selectedUser} border-l-4 ${theme === 'light' ? 'border-blue-500' : 'border-blue-400'}`
+                      selectedUser?.id === user.id
+                        ? 'md:bg-blue-300 md:border-l-4 md:border-blue-500 bg-blue-50'
                         : `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`
-                    }
-                  `}
+                    }`}   
                   onClick={() => handleSelectUser(user)}
                 >
                   {/* Imagen de perfil o icono de usuario */}
