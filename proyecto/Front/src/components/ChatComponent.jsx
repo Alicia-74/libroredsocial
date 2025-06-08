@@ -844,7 +844,7 @@ const filteredUsers = chatUsers
           <div
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-              w-full
+              w-full sticky bottom-0 z-10  md:static
             `}
             style={{
               maxWidth: '100vw',
