@@ -460,6 +460,17 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                       return;
                     }
 
+                     // Solo permite JPG o PNG
+                    if (
+                      !["image/jpeg", "image/png"].includes(file.type) &&
+                      !file.name.toLowerCase().endsWith(".jpg") &&
+                      !file.name.toLowerCase().endsWith(".jpeg") &&
+                      !file.name.toLowerCase().endsWith(".png")
+                    ) {
+                      alert("Solo se permiten imágenes en formato JPG o PNG. Por favor, selecciona una foto compatible.");
+                      return;
+                    }
+                    
                     // Muestra la vista previa local solo mientras sube
                     setImagePreview(URL.createObjectURL(file));
                     
@@ -485,7 +496,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                       setUser((prev) => ({ ...prev, imageUrl: updatedUser.imageUrl })); // Actualiza la URL de la imagen en el estado del usuario
                     } catch (err) {
                       console.error("Error:", err);
-                      alert("Error: Solo se permiten imágenes en formato JPG o PNG. Por favor, selecciona una foto compatible.");
+                      alert("Solo se permiten imágenes en formato JPG o PNG. Por favor, selecciona una foto compatible.");
                     }
                   }}
                   className="hidden" // Oculta el input de archivo
