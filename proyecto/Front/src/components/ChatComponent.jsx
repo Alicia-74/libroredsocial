@@ -286,15 +286,20 @@ const [showInputMargin, setShowInputMargin] = useState(false);
   const { id } = useParams();
   // --- useEffect para seleccionar un usuario de chat basado en el ID de la URL ---
    useEffect(() => {
-    if (id) {
-      const user = chatUsers.find(u => String(u.id) === String(id));
-      if (user) {
-        setSelectedUser(user);
-      } else if (location.state?.targetUser) {
-        setSelectedUser(location.state.targetUser);
-      }
+  if (id) {
+    // Si la lista ya está cargada, busca el usuario ahí
+    const user = chatUsers.find(u => String(u.id) === String(id));
+    if (user) {
+      setSelectedUser(user);
+    } else if (location.state?.targetUser) {
+      // Si vienes desde el perfil y tienes los datos en location.state, selecciona ese usuario
+      setSelectedUser(location.state.targetUser);
+    } else if (!isLoading && chatUsers.length === 0 && location.state?.targetUser) {
+      // Si la lista está vacía y no está cargando, selecciona el usuario del estado
+      setSelectedUser(location.state.targetUser);
     }
-  }, [id, chatUsers, location.state]);
+  }
+}, [id, chatUsers, location.state, isLoading]);
 
   // --- useEffect para configurar la conexión WebSocket y sus suscripciones ---
   // Este es el corazón de la funcionalidad de tiempo real.
