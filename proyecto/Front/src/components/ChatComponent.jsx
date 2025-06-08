@@ -441,19 +441,10 @@ const ChatComponent = ({
   
   // --- useEffect para hacer scroll al final cada vez que los mensajes cambian ---
   useEffect(() => {
-  const container = messagesEndRef.current?.parentNode;
-  if (!container) return;
-
-  // Solo hace scroll si el usuario está cerca del fondo (por ejemplo, a menos de 100px)
-  const isNearBottom =
-    container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-
-  if (isNearBottom) {
+  if (inputFocused) {
     scrollToBottom();
   }
-  // Si NO está cerca del fondo, no hacemos scroll automático
-}, [messages, scrollToBottom]);
-
+}, [inputFocused, scrollToBottom]);
 
   // --- useEffect para cargar los conteos iniciales de no leídos de la lista de chats ---
   // Se ejecuta cuando el ID del usuario está cargado y la lista de chatUsers se ha poblado.
@@ -854,7 +845,7 @@ const filteredUsers = chatUsers
           <div
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-              w-full sticky bottom-0 z-10  md:static
+              w-full z-10  md:static
             `}
             style={{
               maxWidth: '100vw',
