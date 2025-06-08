@@ -663,7 +663,12 @@ const filteredUsers = chatUsers
     // En móvil, cuando hay un chat seleccionado, se convierte en un overlay fixed para toda la pantalla.
     <div className={`flex flex-col ${mainContainerHeightClasses} overflow-hidden
       ${selectedUser && !showChatList ? 'fixed inset-0 z-20 bg-white dark:bg-gray-900' : ''}
-      ${currentTheme.colors.primary} ${currentTheme.colors.text}`}>
+      ${currentTheme.colors.primary} ${currentTheme.colors.text}`}
+      style={{
+        height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
+        overflow: selectedUser && !showChatList && window.innerWidth < 768 ? 'auto' : undefined,
+      }}
+    >
 
 
       {/* Este div flex-1 ahora es el que distribuye el espacio horizontalmente*/}
@@ -844,9 +849,7 @@ const filteredUsers = chatUsers
                 ? (inputFocused ? 0 : 48)
                 : 0,
               maxWidth: '100vw',
-              boxSizing: 'border-box',
-              height: selectedUser && !showChatList && window.innerWidth < 768 ? '50dvh' : undefined,
-              overflow: selectedUser && !showChatList && window.innerWidth < 768 ? 'auto' : undefined,
+              boxSizing: 'border-box'
             }}
           >
             <div className="flex items-center gap-2 w-full">
