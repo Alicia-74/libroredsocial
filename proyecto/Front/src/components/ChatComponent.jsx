@@ -315,7 +315,7 @@ const [showInputMargin, setShowInputMargin] = useState(false);
 
 
 
-
+  
   // --- useEffect para configurar la conexión WebSocket y sus suscripciones ---
   // Este es el corazón de la funcionalidad de tiempo real.
   useEffect(() => {
@@ -708,7 +708,7 @@ const filteredUsers = chatUsers
   return (
     // Contenedor principal: ocupa el alto total disponible menos el navbar de abajo
     // En móvil, cuando hay un chat seleccionado, se convierte en un overlay fixed para toda la pantalla.
-    <div className={`flex flex-col ${currentTheme.colors.primary} ${currentTheme.colors.text} mb-6 md:mb-0 `}
+    <div className={`flex flex-col ${currentTheme.colors.primary} ${currentTheme.colors.text} mb-6 md:mb-0 lg:min-h-0`}
       style={{
         height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
         minHeight: '100dvh'
@@ -767,15 +767,15 @@ const filteredUsers = chatUsers
               {filteredUsers.map(user => (
                 <li
                   key={user.id}
-                  className={`relative flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200
-                    ${
-                      selectedUser?.id === user.id
-                        ? 'md:bg-blue-300 md:border-l-4 md:border-blue-500 bg-blue-50'
-                        : `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`
-                    }`}   
+                  className={`relative flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200 ${
+                    selectedUser?.id === user.id 
+                      ? `${currentTheme.selectedUser} border-l-4 ${
+                          theme === 'light' ? 'border-blue-500' : 'border-blue-400'
+                        }`
+                      : `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`
+                  }`}
                   onClick={() => handleSelectUser(user)}
                 >
-                  {/* Imagen de perfil o icono de usuario */}
                   {user.imageUrl ? (
                     <img
                       src={user.imageUrl}
@@ -816,7 +816,7 @@ const filteredUsers = chatUsers
           {selectedUser ? ( // Si hay un usuario seleccionado, muestra el chat
             <>
               {/* Cabecera del chat actual */}
-              <div className={`p-3 border-b ${currentTheme.colors.border} flex items-center ${theme === 'light' ? 'bg-blue-500' : 'bg-blue-600'} text-white`}>
+              <div className={`p-3 border-b lg:sticky ${currentTheme.colors.border} flex items-center ${theme === 'light' ? 'bg-blue-500' : 'bg-blue-600'} text-white`}>
                 <button
                   className="md:hidden mr-2 p-1 rounded-full hover:bg-white/10"
                   onClick={handleBackToList} // Botón para volver a la lista (solo en móvil)
@@ -888,7 +888,7 @@ const filteredUsers = chatUsers
           <div
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-              w-full z-10 md:static
+              w-full z-10 md:static lg:sticky
             `}
             style={{
               maxWidth: '100vw',
