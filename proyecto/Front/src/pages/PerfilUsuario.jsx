@@ -208,7 +208,7 @@ const PerfilUsuario = () => {
 
   // Navegación
   const handleBack = () => navigate(-1); // Volver a la página anterior
-  const handleChat = () => navigate('/messages', {
+  const handleChat = () => navigate(`/messages/${id}`, {
     state: {
       autoOpenChat: true,   // Bandera para abrir automáticamente
       targetUser: { // Datos completos del usuario
