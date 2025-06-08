@@ -833,13 +833,13 @@ const filteredUsers = chatUsers
               {/* Input para enviar mensajes */}
               <div
                 className={`
-                  p-3  bottom-10 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
+                  p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
                   ${selectedUser && !showChatList ? 'fixed bottom-0 left-0 right-0 z-30 md:static' : ''}
                   w-full
                 `}
                 style={{
                   // En móvil, deja espacio para el teclado (puedes ajustar el valor si lo necesitas)
-                  maxWidth: '100vw',
+                  maxHeight: '100vh',
                   ...(selectedUser && !showChatList ? { boxShadow: '0 -2px 8px rgba(0,0,0,0.04)' } : {})
                 }}
               >
