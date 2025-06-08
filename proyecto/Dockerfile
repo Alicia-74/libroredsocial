@@ -1,7 +1,8 @@
 # Usa una imagen de Maven para compilar el proyecto
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY . .
+COPY pom.xml .
+COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Usa una imagen ligera de Java para ejecutar el jar
