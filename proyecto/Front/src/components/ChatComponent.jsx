@@ -857,7 +857,7 @@ const filteredUsers = chatUsers
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
               w-full z-10 md:static
-              ${showInputMargin ? 'mb-[72px]' : 'mb-[72px]'} md:mb-0
+              ${showInputMargin ? 'mb-[72px]' : 'mb-[89px]'} md:mb-0
             `}
             style={{
               maxWidth: '100vw',
