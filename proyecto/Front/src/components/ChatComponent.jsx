@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState,useParams, useEffect, useRef, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import axios from 'axios';
@@ -281,6 +281,20 @@ const [showInputMargin, setShowInputMargin] = useState(false);
       fetchChatUsers(); // Llama a la función para cargar usuarios
     }
   }, [isCurrentUserIdLoaded, fetchChatUsers]); // Se re-ejecuta si cambian estas dependencias
+
+
+  const { id } = useParams();
+  // --- useEffect para seleccionar un usuario de chat basado en el ID de la URL ---
+   useEffect(() => {
+    if (id) {
+      const user = chatUsers.find(u => String(u.id) === String(id));
+      if (user) {
+        setSelectedUser(user);
+      } else if (location.state?.targetUser) {
+        setSelectedUser(location.state.targetUser);
+      }
+    }
+  }, [id, chatUsers, location.state]);
 
   // --- useEffect para configurar la conexión WebSocket y sus suscripciones ---
   // Este es el corazón de la funcionalidad de tiempo real.
