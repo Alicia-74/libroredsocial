@@ -479,7 +479,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                         }
                       );
 
-                      if (!response.ok) throw new Error("Error al subir la imagen");
+                      if (!response.ok) throw new Error("Solo se permiten imágenes en formato JPG o PNG. Por favor, selecciona una foto compatible.");
 
                       const updatedUser = await response.json();
                       setUser((prev) => ({ ...prev, imageUrl: updatedUser.imageUrl })); // Actualiza la URL de la imagen en el estado del usuario
