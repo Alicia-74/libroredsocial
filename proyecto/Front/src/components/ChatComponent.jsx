@@ -666,10 +666,10 @@ const filteredUsers = chatUsers
 
 
   // Lógica para las clases de altura condicional
-  const mainContainerHeightClasses = selectedUser && !showChatList
-    ? 'fixed inset-0 h-screen' // Ocupa toda la pantalla cuando hay chat seleccionado en móvil
-    : 'h-[75vh] md:h-[89.1vh] lg:h-[89.1vh]'; // Altura normal con padding para el navbar
-
+  const mainContainerHeightClasses = selectedUser && !showChatList && window.innerWidth >= 768
+    ? 'fixed inset-0 h-screen'
+    : 'h-[100dvh] min-h-0';
+    
   // --- Renderizado del componente ChatComponent ---
   return (
     // Contenedor principal: ocupa el alto total disponible menos el navbar de abajo
