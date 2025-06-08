@@ -15,6 +15,7 @@ const BookDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
+  const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -24,7 +25,7 @@ const BookDetail = () => {
     }
 
     setIsLoading(true);
-    fetch(`http://localhost:8080/api/books/external/book/${olid}`, {
+    fetch(`${API_URL}/api/books/external/book/${olid}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -45,7 +46,7 @@ const BookDetail = () => {
 
   const handleAdd = async (type) => {
     const token = sessionStorage.getItem("token");
-    const endpoint = `http://localhost:8080/api/books/${type}/${userId}/${olid}`;
+    const endpoint = `${API_URL}/api/books/${type}/${userId}/${olid}`;
     
     try {
       const response = await fetch(endpoint, {
@@ -167,7 +168,7 @@ const BookDetail = () => {
             {/* Portada del libro */}
             <div className="lg:w-1/3 p-6 flex justify-center bg-gray-100 dark:bg-gray-700">
               <img
-                src={`http://localhost:8080/api/books/external/book/${olid}-L.jpg`}
+                src={`${API_URL}/api/books/external/book/${olid}-L.jpg`}
                 alt={book.title}
                 className="w-full max-w-xs h-auto object-contain rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
                 onError={(e) => {

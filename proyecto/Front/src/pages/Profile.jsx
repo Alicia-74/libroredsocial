@@ -40,7 +40,7 @@ const Profile = () => {
   const [bookSearchTerm, setBookSearchTerm] = useState(""); // Término de búsqueda para filtrar libros
   const [booksPerPage] = useState(4); // Cantidad de libros a mostrar por página
   const [currentBookPage, setCurrentBookPage] = useState(1); // Página actual de la lista de libros
-
+  const API_URL = process.env.REACT_APP_API_URL;
 
 
     //Permiso para aceptar recibir notificaciones:
@@ -132,13 +132,13 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
       try {
         // Realiza todas las peticiones a la API en paralelo para optimizar la carga
         const [userRes, favRes, readRes] = await Promise.all([
-          fetch(`http://localhost:8080/api/users/${decoded.sub}`, {
+          fetch(`${API_URL}/api/users/${decoded.sub}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch(`http://localhost:8080/api/books/fav/${decoded.sub}`, {
+          fetch(`${API_URL}/api/books/fav/${decoded.sub}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch(`http://localhost:8080/api/books/read/${decoded.sub}`, {
+          fetch(`${API_URL}/api/books/read/${decoded.sub}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -201,7 +201,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
       const endpoint = isCurrentlyFollowing ? "unfollow" : "follow"; // Elige el endpoint de la API
 
       // Realiza la petición a la API para seguir o dejar de seguir
-      const response = await fetch(`http://localhost:8080/api/follow/${targetUserId}/${endpoint}`, {
+      const response = await fetch(`${API_URL}/api/follow/${targetUserId}/${endpoint}`, {
         method: "GET", // Asumiendo que tu API usa GET para follow/unfollow
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -463,7 +463,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                     try {
                       // Petición a la API para subir la imagen de perfil
                       const response = await fetch(
-                        `http://localhost:8080/api/users/${currentUserId}/upload-profile-image`,
+                        `${API_URL}/api/users/${currentUserId}/upload-profile-image`,
                         {
                           method: "POST",
                           headers: {
@@ -491,7 +491,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                       try {
                         // Petición a la API para eliminar la imagen de perfil
                         const response = await fetch(
-                          `http://localhost:8080/api/users/${currentUserId}/profile-picture`,
+                          `${API_URL}/api/users/${currentUserId}/profile-picture`,
                           {
                             method: "DELETE",
                             headers: {
@@ -550,7 +550,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                         try {
                           // Petición a la API para actualizar la descripción del usuario
                           const response = await fetch(
-                            `http://localhost:8080/api/users/${currentUserId}`,
+                            `${API_URL}/api/users/${currentUserId}`,
                             {
                               method: "PUT",
                               headers: {
@@ -705,8 +705,8 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
 
                                 // Determina el endpoint correcto para eliminar el libro (favorito o leído)
                                 const endpoint = activeTab === "favoritos"
-                                  ? `http://localhost:8080/api/books/fav/${currentUserId}/${book.olid}`
-                                  : `http://localhost:8080/api/books/read/${currentUserId}/${book.olid}`;
+                                  ? `${API_URL}/api/books/fav/${currentUserId}/${book.olid}`
+                                  : `${API_URL}/api/books/read/${currentUserId}/${book.olid}`;
 
                                 const method = "DELETE"; // Método HTTP para eliminar
 

@@ -23,6 +23,7 @@ const Navbar = ({ hideOnChat = false, isMobile = false }) => {
   const [isCurrentUserIdLoaded, setIsCurrentUserIdLoaded] = useState(false);
   const [tieneMensajesNuevos, setTieneMensajesNuevos] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const API_URL = process.env.REACT_APP_API_URL;
 
   // Obtener ID del usuario actual desde el token
     useEffect(() => {
@@ -47,7 +48,7 @@ const Navbar = ({ hideOnChat = false, isMobile = false }) => {
         const token = sessionStorage.getItem('token');
         if (!currentUserId || !token) return;
 
-        const res = await fetch(`http://localhost:8080/api/messages/unread-count/${currentUserId}`, {
+        const res = await fetch(`${API_URL}/api/messages/unread-count/${currentUserId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

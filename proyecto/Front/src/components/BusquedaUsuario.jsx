@@ -15,6 +15,8 @@ const BusquedaUsuarios = () => {
 
   const navigate = useNavigate();
 
+  const API_URL = process.env.REACT_APP_API_URL;
+
   // Obtener ID del usuario desde el token
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -49,7 +51,7 @@ const BusquedaUsuarios = () => {
 
       console.log("Token:", token);
       const response = await fetch(
-        `http://localhost:8080/api/users/search/${term}`,
+        `${API_URL}/api/users/search/${term}`,
         {
             method: "GET",
             headers: {

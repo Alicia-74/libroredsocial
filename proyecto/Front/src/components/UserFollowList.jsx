@@ -21,12 +21,14 @@ const UserFollowList = ({
   const [error, setError] = useState(null); // Estado para errores
   const itemsPerPage = 10; // Número de usuarios por página
 
+  const API_URL = process.env.REACT_APP_API_URL;
+  
   useEffect(() => {
     // Función para obtener los usuarios (seguidores o seguidos)
     const fetchUsers = async () => {
       try {
         setLoading(true); // Iniciamos el estado de carga
-        const response = await axios.get(`http://localhost:8080/api/follow/${userId}/${type}`);
+        const response = await axios.get(`${API_URL}/api/follow/${userId}/${type}`);
         setUsers(response.data); // Guardamos los usuarios en el estado
         setError(null); // Limpiamos cualquier error previo
       } catch (err) {

@@ -11,12 +11,13 @@ import { useNotifications } from './ContextNotification';
 export default function NotificationListener({ currentUserId }) {
   const stompClientRef = useRef(null);
   const { addNotification } = useNotifications();
+  const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     if (!currentUserId) return; // Solo conectamos si hay usuario
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () => new SockJS(`${API_URL}/ws`),
       reconnectDelay: 5000, // Reconexión cada 5 segundos si falla
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

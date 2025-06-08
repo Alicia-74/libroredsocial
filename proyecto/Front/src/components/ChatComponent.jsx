@@ -48,8 +48,8 @@ const NAVBAR_HEIGHT = 56;
 
 const ChatComponent = ({
   accentColor = 'blue', // Color de acento para algunos elementos (puedes usarlo con Tailwind)
-  apiBaseUrl = 'http://localhost:8080/api', // URL base de tu API REST
-  websocketUrl = 'http://localhost:8080/ws', // URL base para la conexión WebSocket
+  apiBaseUrl = '${API_URL}/api', // URL base de tu API REST
+  websocketUrl = '${API_URL}/ws', // URL base para la conexión WebSocket
   onChatOpen, // Callback cuando se abre un chat individual
   onChatClose // Callback cuando se cierra un chat individual (vuelve a la lista)
 }) => {
@@ -77,7 +77,9 @@ const ChatComponent = ({
   // unreadMessages: Objeto para indicar si un usuario tiene mensajes no leídos (booleano)
   const [unreadMessages, setUnreadMessages] = useState({}); 
   // unreadCounts: Objeto para almacenar el conteo exacto de mensajes no leídos por cada usuario
-  const [unreadCounts, setUnreadCounts] = useState({});     
+  const [unreadCounts, setUnreadCounts] = useState({});   
+  
+  const API_URL = process.env.REACT_APP_API_URL;
 
   // Obtiene la configuración de colores del tema actual
   const currentTheme = themes[theme];

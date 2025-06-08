@@ -23,8 +23,9 @@ export const ThemeProvider = ({ children }) => {
 
   const [themeChangedManually, setThemeChangedManually] = useState(false);
 
+  const API_URL = process.env.REACT_APP_API_URL;
 
-  // ✅ NUEVO: Estado que almacena el userId actual del token
+  // ✅ Estado que almacena el userId actual del token
   const [userId, setUserId] = useState(() => {
     const token = sessionStorage.getItem("token");
     if (!token) return null;
@@ -74,7 +75,7 @@ export const ThemeProvider = ({ children }) => {
         try {
           console.log(`[ThemeContext] Cargando tema para userId: ${userId} desde la DB.`);
           const response = await axios.get(
-            `http://localhost:8080/api/users/${userId}/theme`,
+            `${API_URL}/api/users/${userId}/theme`,
             { headers: getAuthHeaders() }
           );
           const dbTheme = response.data?.themePreference || response.data || 'light';
@@ -120,7 +121,7 @@ export const ThemeProvider = ({ children }) => {
       if (userId) {
         console.log(`[ThemeContext] Persistiendo tema '${theme}' para userId: ${userId} en la DB.`);
         axios.put(
-          `http://localhost:8080/api/users/${userId}/theme`,
+          `${API_URL}/api/users/${userId}/theme`,
           { theme },
           { headers: getAuthHeaders() }
         ).catch(err => console.error("[ThemeContext] Error al guardar el tema en la DB:", err));

@@ -35,6 +35,8 @@ const PerfilUsuario = () => {
   const [isFollowLoading, setIsFollowLoading] = useState(false); // Estado de carga para botones de seguir/dejar de seguir
   const [followError, setFollowError] = useState(null); // Error en operaciones de seguimiento
 
+  const API_URL = process.env.REACT_APP_API_URL;
+  
   /**
    * Carga los datos del usuario desde el backend
    */
@@ -52,7 +54,7 @@ const PerfilUsuario = () => {
       setCurrentUserId(decoded.sub);
 
       // 1. Cargar datos del usuario cuyo perfil estamos viendo
-      const userResponse = await fetch(`http://localhost:8080/api/users/${id}`, {
+      const userResponse = await fetch(`${API_URL}/api/users/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -74,7 +76,7 @@ const PerfilUsuario = () => {
       setUser(safeData);
 
       // 2. Verificar si el usuario actual sigue a este usuario
-      const followCheckResponse = await fetch(`http://localhost:8080/api/follow/${id}/is-following`, {
+      const followCheckResponse = await fetch(`${API_URL}/api/follow/${id}/is-following`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -108,7 +110,7 @@ const PerfilUsuario = () => {
       const token = sessionStorage.getItem("token");
 
       // Cargar libros favoritos
-      const favResponse = await fetch(`http://localhost:8080/api/books/fav/${id}`, {
+      const favResponse = await fetch(`${API_URL}/api/books/fav/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!favResponse.ok) throw new Error("Error al cargar favoritos");
@@ -116,7 +118,7 @@ const PerfilUsuario = () => {
       setFavoriteBooks(favData);
 
       // Cargar libros leídos
-      const readResponse = await fetch(`http://localhost:8080/api/books/read/${id}`, {
+      const readResponse = await fetch(`${API_URL}/api/books/read/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!readResponse.ok) throw new Error("Error al cargar leídos");
@@ -150,7 +152,7 @@ const PerfilUsuario = () => {
     setIsFollowLoading(true);
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch(`http://localhost:8080/api/follow/${id}/follow`, {
+      const response = await fetch(`${API_URL}/api/follow/${id}/follow`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -181,7 +183,7 @@ const PerfilUsuario = () => {
     setIsFollowLoading(true);
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch(`http://localhost:8080/api/follow/${id}/unfollow`, {
+      const response = await fetch(`${API_URL}/api/follow/${id}/unfollow`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -257,7 +259,7 @@ const PerfilUsuario = () => {
     >
       {/* Imagen del libro con fallback si no carga */}
       <img
-        src={`http://localhost:8080/api/books/external/book/${book.olid}-L.jpg`}
+        src={`${API_URL}/api/books/external/book/${book.olid}-L.jpg`}
         alt={book.title}
         className="w-16 h-20 object-cover rounded shadow mr-4"
         loading="lazy"
