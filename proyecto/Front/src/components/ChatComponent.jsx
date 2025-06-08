@@ -831,30 +831,38 @@ const filteredUsers = chatUsers
               </div>
 
               {/* Input para enviar mensajes */}
-              <div
-                className={`p-3 mb-10 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}`}
-              >
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    id="message-input"
-                    className={`flex-1 p-3 rounded-full outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-600'}
-                                ${currentTheme.colors.input} ${currentTheme.colors.text} placeholder-${theme === 'light' ? 'gray-500' : 'gray-400'}`}
-                    placeholder="Escribe un mensaje..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()} // Envía al presionar Enter
-                  />
-                  <button
-                    onClick={sendMessage}
-                    // Deshabilita el botón si no hay mensaje, no hay conexión, o no hay usuario actual
-                    disabled={!newMessage.trim() || connectionStatus !== 'connected' || currentUserId === null} 
-                    className={buttonClasses}
-                  >
-                    <FaPaperPlane size={16} /> {/* Icono de enviar */}
-                  </button>
-                </div>
-              </div>
+<div
+  className={`
+    p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
+    ${selectedUser && !showChatList && window.innerWidth < 768 ? 'fixed left-0 right-0 bottom-0 z-30 w-full' : ''}
+  `}
+  style={{
+    // En móvil, añade un margen inferior para que no esté pegado abajo
+    marginBottom: selectedUser && !showChatList && window.innerWidth < 768 ? 16 : 0,
+    maxWidth: '100vw',
+    boxSizing: 'border-box'
+  }}
+>
+  <div className="flex items-center gap-2 w-full">
+    <input
+      type="text"
+      id="message-input"
+      className={`flex-1 p-3 rounded-full outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-600'}
+                  ${currentTheme.colors.input} ${currentTheme.colors.text} placeholder-${theme === 'light' ? 'gray-500' : 'gray-400'}`}
+      placeholder="Escribe un mensaje..."
+      value={newMessage}
+      onChange={(e) => setNewMessage(e.target.value)}
+      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+    />
+    <button
+      onClick={sendMessage}
+      disabled={!newMessage.trim() || connectionStatus !== 'connected' || currentUserId === null}
+      className={buttonClasses}
+    >
+      <FaPaperPlane size={16} />
+    </button>
+  </div>
+</div>
             </>
           ) : ( // Si no hay usuario seleccionado, muestra un mensaje de bienvenida
             <div className="flex-1 flex flex-col items-center justify-center">
