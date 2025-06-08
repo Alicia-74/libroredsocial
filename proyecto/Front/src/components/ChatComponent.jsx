@@ -701,7 +701,7 @@ const filteredUsers = chatUsers
 
   // Lógica para las clases de altura condicional
   const mainContainerHeightClasses = selectedUser && !showChatList && window.innerWidth >= 768
-    ? 'fixed inset-0 h-screen'
+    ? 'fixed inset-0'
     : 'h-[100dvh] min-h-0';
 
   // --- Renderizado del componente ChatComponent ---
