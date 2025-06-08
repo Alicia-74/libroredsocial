@@ -667,6 +667,8 @@ const filteredUsers = chatUsers
       style={{
         height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
         overflow: selectedUser && !showChatList && window.innerWidth < 768 ? 'auto' : undefined,
+        // Asegura que el contenedor ocupe todo el alto visible
+        minHeight: '100dvh'
       }}
     >
 
@@ -801,6 +803,8 @@ const filteredUsers = chatUsers
                     : 'linear-gradient(rgba(26, 32, 44, 0.9), rgba(26, 32, 44, 0.9)), url("https://web.whatsapp.com/img/bg-chat-tile-dark_04fcacde539c58cca6745483d4858c52.png")',
                   backgroundSize: '200px 200px',
                   backgroundRepeat: 'repeat',
+                  paddingBottom: window.innerWidth < 768 ? 72 : 24, // Espacio para la barra en móvil
+                  transition: 'padding-bottom 0.2s'
                 }}
               >
 
@@ -841,15 +845,12 @@ const filteredUsers = chatUsers
           <div
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-              ${selectedUser && !showChatList && window.innerWidth < 768 ? 'sticky left-0 right-0 bottom-0 z-30 w-full' : ''}
+              w-full
             `}
             style={{
-              // Mucho más espacio en móvil, y nada si el input está enfocado (teclado abierto)
-              paddingBottom: selectedUser && !showChatList && window.innerWidth < 768
-                ? (inputFocused ? 0 : 48)
-                : 0,
               maxWidth: '100vw',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              marginTop: window.innerWidth < 768 ? 0 : 'auto'
             }}
           >
             <div className="flex items-center gap-2 w-full">
