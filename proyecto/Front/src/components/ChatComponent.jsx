@@ -110,7 +110,7 @@ const [showInputMargin, setShowInputMargin] = useState(false);
   // Usa useCallback para memoizar la función y evitar re-creaciones innecesarias,
   // lo que es bueno para el rendimiento si se pasa como dependencia a otros hooks.
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     setShowInputMargin(true);
     setTimeout(() => setShowInputMargin(false), 600); // El margen dura 600ms
   }, []);
