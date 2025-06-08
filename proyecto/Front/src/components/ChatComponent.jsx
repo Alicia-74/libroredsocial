@@ -81,7 +81,7 @@ const ChatComponent = ({
   // unreadCounts: Objeto para almacenar el conteo exacto de mensajes no leídos por cada usuario
   const [unreadCounts, setUnreadCounts] = useState({});   
   const [inputFocused, setInputFocused] = useState(false);
-
+const [showInputMargin, setShowInputMargin] = useState(false);
   
   // Obtiene la configuración de colores del tema actual
   const currentTheme = themes[theme];
@@ -111,6 +111,8 @@ const ChatComponent = ({
   // lo que es bueno para el rendimiento si se pasa como dependencia a otros hooks.
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    setShowInputMargin(true);
+    setTimeout(() => setShowInputMargin(false), 600); // El margen dura 600ms
   }, []);
 
   // --- Función para obtener la lista de usuarios con los que el usuario actual puede chatear ---
@@ -854,7 +856,8 @@ const filteredUsers = chatUsers
           <div
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-              w-full z-10 mb-6 md:mb-0 md:static
+              w-full z-10 md:static
+              ${showInputMargin ? 'mb-16' : 'mb-6'} md:mb-0
             `}
             style={{
               maxWidth: '100vw',
