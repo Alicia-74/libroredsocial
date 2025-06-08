@@ -812,7 +812,7 @@ const filteredUsers = chatUsers
                     : 'linear-gradient(rgba(26, 32, 44, 0.9), rgba(26, 32, 44, 0.9)), url("https://web.whatsapp.com/img/bg-chat-tile-dark_04fcacde539c58cca6745483d4858c52.png")',
                   backgroundSize: '200px 200px',
                   backgroundRepeat: 'repeat',
-                  paddingBottom: 24, // Espacio para la barra en móvil
+                  paddingBottom: 0, // Espacio para la barra en móvil
                   transition: 'padding-bottom 0.2s'
                 }}
               >
