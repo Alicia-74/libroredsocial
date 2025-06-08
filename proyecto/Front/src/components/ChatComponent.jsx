@@ -112,7 +112,7 @@ const [showInputMargin, setShowInputMargin] = useState(false);
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     setShowInputMargin(true);
-    setTimeout(() => setShowInputMargin(false), 100000); // El margen dura 600ms
+    setTimeout(() => setShowInputMargin(false), 600); // El margen dura 600ms
   }, []);
 
   // --- Función para obtener la lista de usuarios con los que el usuario actual puede chatear ---
@@ -857,7 +857,7 @@ const filteredUsers = chatUsers
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
               w-full z-10 md:static
-              ${showInputMargin ? 'mb-16' : 'mb-6'} md:mb-0
+              ${showInputMargin ? 'mb-20' : 'mb-16'} md:mb-0
             `}
             style={{
               maxWidth: '100vw',
