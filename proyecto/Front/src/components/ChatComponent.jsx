@@ -845,7 +845,7 @@ const filteredUsers = chatUsers
                 : 0,
               maxWidth: '100vw',
               boxSizing: 'border-box',
-              height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
+              height: selectedUser && !showChatList && window.innerWidth < 768 ? '50dvh' : undefined,
               overflow: selectedUser && !showChatList && window.innerWidth < 768 ? 'auto' : undefined,
             }}
           >
