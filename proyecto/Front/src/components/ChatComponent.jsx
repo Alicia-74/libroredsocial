@@ -844,7 +844,9 @@ const filteredUsers = chatUsers
                 ? (inputFocused ? 0 : 48)
                 : 0,
               maxWidth: '100vw',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
+              overflow: selectedUser && !showChatList && window.innerWidth < 768 ? 'auto' : undefined,
             }}
           >
             <div className="flex items-center gap-2 w-full">
