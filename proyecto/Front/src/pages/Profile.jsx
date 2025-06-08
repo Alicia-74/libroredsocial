@@ -485,7 +485,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                       setUser((prev) => ({ ...prev, imageUrl: updatedUser.imageUrl })); // Actualiza la URL de la imagen en el estado del usuario
                     } catch (err) {
                       console.error("Error:", err);
-                      alert(`Error al subir la imagen: ${err.message || err}`);
+                      alert("Error: Solo se permiten imágenes en formato JPG o PNG. Por favor, selecciona una foto compatible.");
                     }
                   }}
                   className="hidden" // Oculta el input de archivo
