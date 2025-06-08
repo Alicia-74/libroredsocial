@@ -836,7 +836,7 @@ const filteredUsers = chatUsers
           <div
             className={`
               p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
-              ${selectedUser && !showChatList && window.innerWidth < 768 ? 'fixed left-0 right-0 bottom-0 z-30 w-full' : ''}
+              ${selectedUser && !showChatList && window.innerWidth < 768 ? 'sticky left-0 right-0 bottom-0 z-30 w-full' : ''}
             `}
             style={{
               // Mucho más espacio en móvil, y nada si el input está enfocado (teclado abierto)
