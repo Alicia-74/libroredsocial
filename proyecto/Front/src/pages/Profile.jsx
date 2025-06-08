@@ -454,9 +454,9 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                     const file = e.target.files[0];
                     if (!file) return;
 
-                    const previewUrl = URL.createObjectURL(file);
-                    setImagePreview(previewUrl); // Actualiza la vista previa
-
+                    // Muestra la vista previa local solo mientras sube
+                    setImagePreview(URL.createObjectURL(file));
+                    
                     const formData = new FormData();
                     formData.append("file", file); // Añade el archivo a un FormData
 
@@ -467,7 +467,7 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                         {
                           method: "POST",
                           headers: {
-                            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+                            'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
                           },
                           body: formData,
                         }
