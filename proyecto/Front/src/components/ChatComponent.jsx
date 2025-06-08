@@ -112,7 +112,7 @@ const [showInputMargin, setShowInputMargin] = useState(false);
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     setShowInputMargin(true);
-    setTimeout(() => setShowInputMargin(false), 600); // El margen dura 600ms
+    setTimeout(() => setShowInputMargin(false), 100000); // El margen dura 600ms
   }, []);
 
   // --- Función para obtener la lista de usuarios con los que el usuario actual puede chatear ---
