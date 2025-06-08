@@ -770,7 +770,7 @@ const filteredUsers = chatUsers
                   className={`relative flex items-center p-3 border-b ${currentTheme.colors.border} cursor-pointer transition-colors duration-200
                     ${
                       selectedUser?.id === user.id && window.innerWidth >= 768
-                        ? 'bg-blue-100' // Color celeste para el chat seleccionado en pantallas md o mayores
+                        ? 'bg-blue-300' // Color celeste para el chat seleccionado en pantallas md o mayores
                         : selectedUser?.id === user.id
                         ? `${currentTheme.selectedUser} border-l-4 ${theme === 'light' ? 'border-blue-500' : 'border-blue-400'}`
                         : `hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'}`
