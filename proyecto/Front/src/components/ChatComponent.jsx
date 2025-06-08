@@ -711,7 +711,8 @@ const filteredUsers = chatUsers
     <div className={`flex flex-col ${currentTheme.colors.primary} ${currentTheme.colors.text} mb-6 md:mb-0 lg:min-h-0`}
       style={{
         height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
-        minHeight: '100dvh'
+        minHeight: '100dvh',
+        overflow: 'hidden', // Evita scrolls indeseados
       }}
     >
 
