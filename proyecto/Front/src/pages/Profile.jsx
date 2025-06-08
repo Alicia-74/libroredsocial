@@ -454,6 +454,12 @@ const [notificationAlertMessage, setNotificationAlertMessage] = useState("");
                     const file = e.target.files[0];
                     if (!file) return;
 
+                    //Opcional: limita el tamaño (por ejemplo, 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                      alert("La imagen es demasiado grande. Elige una menor a 5MB.");
+                      return;
+                    }
+
                     // Muestra la vista previa local solo mientras sube
                     setImagePreview(URL.createObjectURL(file));
                     
