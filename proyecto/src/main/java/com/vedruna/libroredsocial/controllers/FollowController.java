@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import com.vedruna.libroredsocial.dto.UserDTO;
 import com.vedruna.libroredsocial.services.FollowServiceI;
 
-// Permite peticiones CORS desde el frontend que corre en localhost:3000
-@CrossOrigin(origins = "https://libroredsocial-amante-de-los-libros.vercel.app")
 
 // Define que esta clase es un controlador REST
 @RestController

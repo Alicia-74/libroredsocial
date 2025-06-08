@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "https://libroredsocial-amante-de-los-libros.vercel.app")
 @RestController
 @RequestMapping("/api/users")
 public class UserController {

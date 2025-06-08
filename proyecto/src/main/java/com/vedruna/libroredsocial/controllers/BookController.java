@@ -25,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-@CrossOrigin(origins = "https://libroredsocial-amante-de-los-libros.vercel.app") // Permite peticiones CORS desde localhost:3000
 @RestController // Define que esta clase es un controlador REST
 @RequestMapping("/api/books") // Ruta base para todos los endpoints de este controlador
 public class BookController {

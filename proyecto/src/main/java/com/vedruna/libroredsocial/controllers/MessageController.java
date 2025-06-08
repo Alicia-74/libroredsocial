@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "https://libroredsocial-amante-de-los-libros.vercel.app") 
-// Permite que el frontend alojado en localhost:3000 pueda hacer peticiones a este backend (evita error CORS)
 @RestController 
 // Define que esta clase es un controlador REST y que todos sus métodos devolverán datos (no vistas)
 @RequestMapping("/api/messages") 

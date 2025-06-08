@@ -14,7 +14,6 @@ import com.vedruna.libroredsocial.security.auth.dto.LoginRequestDTO;
 import com.vedruna.libroredsocial.security.auth.dto.RegisterRequestDTO;
 import com.vedruna.libroredsocial.security.auth.services.AuthServiceI;
 
-@CrossOrigin(origins = "https://libroredsocial-amante-de-los-libros.vercel.app")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
