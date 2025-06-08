@@ -45,11 +45,13 @@ const themes = {
 
 // Altura del navbar inferior, ajusta si es necesario (ej: 56px para h-14, 64px para h-16)
 const NAVBAR_HEIGHT = 56; 
+const API_URL = process.env.REACT_APP_API_URL;
+
 
 const ChatComponent = ({
   accentColor = 'blue', // Color de acento para algunos elementos (puedes usarlo con Tailwind)
-  apiBaseUrl = '${API_URL}/api', // URL base de tu API REST
-  websocketUrl = '${API_URL}/ws', // URL base para la conexión WebSocket
+  apiBaseUrl = `${API_URL}/api`, // URL base de tu API REST
+  websocketUrl = `${API_URL}/ws`, // URL base para la conexión WebSocket
   onChatOpen, // Callback cuando se abre un chat individual
   onChatClose // Callback cuando se cierra un chat individual (vuelve a la lista)
 }) => {
@@ -79,8 +81,7 @@ const ChatComponent = ({
   // unreadCounts: Objeto para almacenar el conteo exacto de mensajes no leídos por cada usuario
   const [unreadCounts, setUnreadCounts] = useState({});   
   
-  const API_URL = process.env.REACT_APP_API_URL;
-
+  
   // Obtiene la configuración de colores del tema actual
   const currentTheme = themes[theme];
   // Clases CSS para el botón de enviar mensaje, cambia según el tema
