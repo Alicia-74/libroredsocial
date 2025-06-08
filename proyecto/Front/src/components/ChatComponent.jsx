@@ -832,8 +832,25 @@ const filteredUsers = chatUsers
 
               {/* Input para enviar mensajes */}
               <div
-                className={`p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}`}
+                className={`
+                  p-3 border-t ${currentTheme.colors.border} ${currentTheme.colors.secondary}
+                  ${selectedUser && !showChatList ? 'fixed bottom-0 left-0 right-0 z-30 md:static' : ''}
+                  w-full
+                `}
+                style={{
+                  // En móvil, deja espacio para el teclado (puedes ajustar el valor si lo necesitas)
+                  maxWidth: '100vw',
+                  ...(selectedUser && !showChatList ? { boxShadow: '0 -2px 8px rgba(0,0,0,0.04)' } : {})
+                }}
               >
+                <form
+                  className="flex items-center gap-2"
+                  onSubmit={e => {
+                    e.preventDefault();
+                    sendMessage();
+                  }}
+                  autoComplete="off"
+                > 
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
@@ -844,6 +861,12 @@ const filteredUsers = chatUsers
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && sendMessage()} // Envía al presionar Enter
+                    onFocus={() => {
+                      // Opcional: desplaza el chat hacia abajo al enfocar el input en móvil
+                      setTimeout(scrollToBottom, 300);
+                    }}
+                    inputMode="text"
+                    autoComplete="off"
                   />
                   <button
                     onClick={sendMessage}
@@ -854,6 +877,7 @@ const filteredUsers = chatUsers
                     <FaPaperPlane size={16} /> {/* Icono de enviar */}
                   </button>
                 </div>
+                </form>
               </div>
             </>
           ) : ( // Si no hay usuario seleccionado, muestra un mensaje de bienvenida
