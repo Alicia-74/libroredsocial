@@ -666,7 +666,6 @@ const filteredUsers = chatUsers
         ${currentTheme.colors.primary} ${currentTheme.colors.text}`}
       style={{
         height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
-        overflow: selectedUser && !showChatList && window.innerWidth < 768 ? 'auto' : undefined,
         minHeight: '100dvh'
       }}
     >
