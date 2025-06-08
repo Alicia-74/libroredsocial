@@ -23,7 +23,7 @@ function QR() {
     const qrSize = window.innerWidth < 640 ? 150 : 180; // 150px para móviles (sm), 180px para desktop
 
     return (
-        <div className="flex flex-col items-center justify-center sm:h-[70px] bg-gray-100 dark:bg-gray-800 : bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <div className="flex flex-col items-center justify-center sm:pb-16 bg-gray-100 dark:bg-gray-800 : bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             {showInstructions ? (
                 // Contenedor de Instrucciones
                 <div 
