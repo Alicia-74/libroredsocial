@@ -674,7 +674,7 @@ const filteredUsers = chatUsers
   return (
     // Contenedor principal: ocupa el alto total disponible menos el navbar de abajo
     // En móvil, cuando hay un chat seleccionado, se convierte en un overlay fixed para toda la pantalla.
-    <div className={`flex flex-col ${currentTheme.colors.primary} ${currentTheme.colors.text}`}
+    <div className={`flex flex-col ${currentTheme.colors.primary} ${currentTheme.colors.text} mb-6 md:mb-0 `}
       style={{
         height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
         minHeight: '100dvh'
