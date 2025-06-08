@@ -79,8 +79,8 @@ const PerfilUsuario = () => {
       const followCheckResponse = await fetch(`${API_URL}/api/follow/${id}/is-following`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
-          userId: decoded.sub,
+          'Authorization': `Bearer ${token}`,
+          'userId': decoded.sub,
         },
       });
 

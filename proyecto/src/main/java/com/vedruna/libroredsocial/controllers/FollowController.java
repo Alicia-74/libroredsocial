@@ -56,7 +56,7 @@ public class FollowController {
     // Endpoint para consultar si el usuario actual sigue a otro usuario.
     // Devuelve true o false en la respuesta.
     @GetMapping("/{id}/is-following")
-    public ResponseEntity<?> isFollowing(@PathVariable Integer id, @RequestHeader("userId") Integer currentUserId) {
+    public ResponseEntity<?> isFollowing(@PathVariable Integer id, @RequestHeader("userid") Integer currentUserId) {
         boolean isFollowing = followService.isFollowing(currentUserId, id);
         return ResponseEntity.ok(isFollowing); // true o false
     }
