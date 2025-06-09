@@ -701,18 +701,17 @@ const filteredUsers = chatUsers
 
   // Lógica para las clases de altura condicional
   const mainContainerHeightClasses = selectedUser && !showChatList && window.innerWidth >= 768
-    ? 'fixed inset-0'
+    ? 'fixed inset-0 h-screen'
     : 'h-[100dvh] min-h-0';
 
   // --- Renderizado del componente ChatComponent ---
   return (
     // Contenedor principal: ocupa el alto total disponible menos el navbar de abajo
     // En móvil, cuando hay un chat seleccionado, se convierte en un overlay fixed para toda la pantalla.
-    <div className={`flex flex-col ${currentTheme.colors.primary} ${currentTheme.colors.text} mb-6 md:mb-0 min-h-0`}
+    <div className={`flex flex-col ${currentTheme.colors.primary} ${currentTheme.colors.text} mb-6 md:mb-0 `}
       style={{
         height: selectedUser && !showChatList && window.innerWidth < 768 ? '100dvh' : undefined,
-        //minHeight: '100dvh',
-        overflow: 'hidden', // Evita scrolls indeseados
+        minHeight: '100dvh'
       }}
     >
 
@@ -811,7 +810,7 @@ const filteredUsers = chatUsers
         </div>
 
         {/* Área de chat principal */}
-        <div className={`flex-1 flex flex-col min-h-0
+        <div className={`flex-1 flex flex-col
                          ${selectedUser && !showChatList ? 'flex' : 'hidden'} {/* Oculto en móvil si la lista de chats está visible */}
                          md:flex`}> {/* Siempre visible en desktop */}
           {selectedUser ? ( // Si hay un usuario seleccionado, muestra el chat

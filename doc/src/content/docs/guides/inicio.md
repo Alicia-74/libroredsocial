@@ -65,6 +65,7 @@ Esta documentación proporciona una visión completa del proyecto, incluyendo di
 
 📍 **Backend:** Spring Boot + MySQL + OpenLibrary API  
 📍 **Frontend:** React + Tailwind CSS  
+📍 **Mensajería en Tiempo Real:** WebSocket 
 📍 **Autenticación:** JWT + Spring Security   
 📍 **Despliegue:** Docker
 
